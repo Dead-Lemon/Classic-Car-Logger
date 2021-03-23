@@ -6,23 +6,18 @@
 SerialTransfer consoleData;
 
 //expected data structures from car interface module
-struct gyroStruct {
+struct gyroSendStruct {
   
   float Yaw, Pitch, Roll;
-  float AccX,AccY,AccZ;
-  float GyroX,GyroY,GyroZ;
-  float LinX,LinY,LinZ;
+  float AccY, GyroY, LinY;
   
-} gyroData; 
+} gyroSend; //all data that will be sent to display
 
-struct gpsStruct {
+struct gpsSendStruct {
   
-  float gpsLong, gpsLat, gpsSpd;
-  unsigned short gpsSat;
-  unsigned long gpsAge;
-  float gpsTime;
+    float speed, alt, course; 
   
-} gpsData;
+} gpsSend; //all data that will be sent to display
 
 //create lcd instances
 LiquidCrystal lcd1(9);
@@ -61,6 +56,12 @@ void setup() {
 
 void loop() {
 
+  if(consoleData.available()) {
+    uint16_t recSize=0; //create var to track incoming bytes
+    recSize = consoleData.rxObj(gyroSend, recSize); //pack 1st struct into the buffer
+    recSize = consoleData.rxObj(gpsSend, recSize); //pack 2nd struct into the buffer
+  }
+
   int currentTime = millis() / 100; // assigns the current time since boot in tenths of a second to currentTime
   byte lastDigit = currentTime % 10;
   currentTime = currentTime /= 10;
@@ -72,12 +73,4 @@ void loop() {
   lcd1.print(".");
   lcd1.print(lastDigit);
 
-}
-
-void serialEvent() {
-  if(consoleData.available()) {
-    uint16_t recSize=0; //create var to track incoming bytes
-    recSize = consoleData.rxObj(gyroData, recSize); //pack 1st struct into the buffer
-    recSize = consoleData.rxObj(gpsData, recSize); //pack 2nd struct into the buffer
-  }
 }
