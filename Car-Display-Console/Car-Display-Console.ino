@@ -75,8 +75,9 @@ void loop() {
 }
 
 void serialEvent() {
-  
-  uint16_t recSize=0; //create var to track incoming bytes
-  recSize = consoleData.rxObj(gyroData, recSize); //pack 1st struct into the buffer
-  recSize = consoleData.rxObj(gpsData, recSize); //pack 2nd struct into the buffer
+  if(consoleData.available()) {
+    uint16_t recSize=0; //create var to track incoming bytes
+    recSize = consoleData.rxObj(gyroData, recSize); //pack 1st struct into the buffer
+    recSize = consoleData.rxObj(gpsData, recSize); //pack 2nd struct into the buffer
+  }
 }
