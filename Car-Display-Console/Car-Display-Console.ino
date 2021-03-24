@@ -88,10 +88,10 @@ void loop() {
   int currentTime = millis() / 100; // assigns the current time since boot in tenths of a second to currentTime
   byte lastDigit = currentTime % 10;
   currentTime = currentTime /= 10;
-  bigNum1.displayLargeInt(currentTime, 0, 4, false);
-  bigNum2.displayLargeInt(currentTime, 0, 4, false);
-  bigNum3.displayLargeInt(currentTime, 0, 4, false);
-  bigNum4.displayLargeInt(currentTime, 0, 4, false);
+  bigNum1.displayLargeInt(gyroSend.AccY, 0, 4, false);
+  bigNum2.displayLargeInt((int)gyroSend.Roll, 0, 4, false);
+  bigNum3.displayLargeInt((int)gpsSend.speed, 0, 4, false);
+  bigNum4.displayLargeInt((int)gpsSend.satellites, 0, 4, false);
   lcd1.setCursor(12, 1);
   lcd1.print(".");
   lcd1.print(lastDigit);
