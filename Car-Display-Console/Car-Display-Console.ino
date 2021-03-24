@@ -93,9 +93,9 @@ void loop() {
     uint16_t recSize=0; //create var to track incoming bytes
     recSize = consoleData.rxObj(gyroSend, recSize); //pack 1st struct into the buffer
     recSize = consoleData.rxObj(gpsSend, recSize); //pack 2nd struct into the buffer
-    recSize = consoleData.rxObj(devState, recSize); //pack 2nd struct into the buffer
-    recSize = consoleData.rxObj(devReq, recSize); //pack 2nd struct into the buffer
-    recSize = consoleData.rxObj(sensor, recSize); //pack 2nd struct into the buffer
+    recSize = consoleData.rxObj(devState, recSize); 
+    recSize = consoleData.rxObj(devReq, recSize); 
+    recSize = consoleData.rxObj(sensor, recSize); 
   }
 
 
@@ -128,8 +128,8 @@ void printLittle(int little, LiquidCrystal *lcd) {
 int bigInt(float raw) {
   int big, little;
   int tmp;
-  tmp = raw * 10;
-  little = (int)tmp % 10;
-  big = (int)raw/10;
+  tmp = raw * 10; //move the decimal point up 1
+  little = (int)tmp % 10; //save that decimal point as the int little
+  big = (int)raw/10; //remove the decimal point and save as the int big
   return(big, little);
 }
