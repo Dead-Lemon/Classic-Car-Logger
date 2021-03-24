@@ -130,6 +130,6 @@ int bigInt(float raw) {
   int tmp;
   tmp = raw * 10; //move the decimal point up 1
   little = (int)tmp % 10; //save that decimal point as the int little
-  big = (int)raw/10; //remove the decimal point and save as the int big
+  big = (int)tmp/10; //remove the decimal point and save as the int big
   return(big, little);
 }
