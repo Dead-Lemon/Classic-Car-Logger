@@ -15,23 +15,36 @@ SerialTransfer consoleData; //allow tranfer of data structures over serial
 HardwareSerial Serial2(PA3, PA2); //enable serial port 2
 
 
-struct gyroStruct {
+struct gyroDataStruct {
   
   float Yaw, Pitch, Roll;
   float AccX,AccY,AccZ;
   float GyroX,GyroY,GyroZ;
   float LinX,LinY,LinZ;
   
-} gyroData;
+} gyroData; //all data that will be logged
 
-struct gpsStruct {
+struct gyroSendStruct {
   
-  float gpsLong, gpsLat, gpsSpd;
-  unsigned short gpsSat;
-  unsigned long gpsAge;
-  float gpsTime;
+  float Yaw, Pitch, Roll;
+  float AccY, GyroY, LinY;
   
-} gpsData;
+} gyroSend; //all data that will be sent to display
+
+struct gpsDataStruct {
+  
+    float Long, Lat;
+    unsigned long fix_age;
+    unsigned long date, time, age;
+    float speed, alt, course;
+    
+} gpsData; //all data that will be logged
+
+struct gpsSendStruct {
+  
+    float speed, alt, course;  
+  
+} gpsSend; //all data that will be sent to display
 
 
 float gpsLong, gpsLat, gpsSpd;
@@ -44,14 +57,13 @@ void setup() {
   Serial1.begin(9200); //interface with GPS module
   Serial2.begin(115200); //send data to display console
   consoleData.begin(Serial2);
-  Wire.begin();
+  Wire.begin(); //interface with MPU9250
   
   delay(200);
   mpu.setup(0x68);
   delay(200);
-  
   mpu.calibrateAccelGyro();
-  mpu.calibrateMag();
+//  mpu.calibrateMag();
   delay(200);
   
 
@@ -82,13 +94,18 @@ void mpuUpdate() {
         gyroData.GyroZ = mpu.getGyroZ();
         gyroData.LinX = mpu.getLinearAccX();
         gyroData.LinY = mpu.getLinearAccY(); 
-        gyroData.LinZ = mpu.getLinearAccZ();
-        
+        gyroData.LinZ = mpu.getLinearAccZ();  
  }
 }
 
-void gpsUpdate() {
 
+void gpsUpdate() {
+   gps.f_get_position(&gpsData.Lat, &gpsData.Long, &gpsData.fix_age);
+   gps.get_datetime(&gpsData.date, &gpsData.time, &gpsData.age);
+   gpsData.speed = gps.f_speed_kmph();
+   gpsData.alt = gps.f_altitude();
+   gpsData.course = gps.f_course();
+  
 
 }
 
@@ -100,9 +117,8 @@ void serialEvent1() { //hardware serial interupt when data arrives
 void consoleUpdate() {
 
   uint16_t sendSize = 0; //create variable to keep track of number of bytes being sent
-  sendSize = consoleData.txObj(gyroData, sendSize); //pack 1st struct into the buffer
-  sendSize = consoleData.txObj(gpsData, sendSize); //pack 2nd struct into the buffer
+  sendSize = consoleData.txObj(gyroSend, sendSize); //pack 1st struct into the buffer
+  sendSize = consoleData.txObj(gpsSend, sendSize); //pack 2nd struct into the buffer
   consoleData.sendData(sendSize); //send buffer
-
 
 }
