@@ -38,6 +38,19 @@ struct sensorData {
   
 } sensor;
 
+struct lcdSettings {
+
+  int brightness;
+  bool backlight;
+  
+} lcdSet; //univeral lcd settings
+
+struct numDisplay {
+ 
+  int big, little = 0;
+  int size = 4;
+  
+} numDisp1, numDisp2, numDisp3, numDisp4; //store converted float for big number display
 
 //create lcd instances
 LiquidCrystal lcd1(9);
@@ -85,15 +98,38 @@ void loop() {
     recSize = consoleData.rxObj(sensor, recSize); //pack 2nd struct into the buffer
   }
 
-  int currentTime = millis() / 100; // assigns the current time since boot in tenths of a second to currentTime
-  byte lastDigit = currentTime % 10;
-  currentTime = currentTime /= 10;
-  bigNum1.displayLargeInt(gyroSend.AccY, 0, 4, false);
-  bigNum2.displayLargeInt((int)gyroSend.Roll, 0, 4, false);
-  bigNum3.displayLargeInt((int)gpsSend.speed, 0, 4, false);
-  bigNum4.displayLargeInt((int)gpsSend.satellites, 0, 4, false);
-  lcd1.setCursor(12, 1);
-  lcd1.print(".");
-  lcd1.print(lastDigit);
 
+  numDisp1.big, numDisp1.little = bigInt(gyroSend.Yaw); //convert float to int and split the real and decimal values
+  bigNum1.displayLargeInt(numDisp1.big, 0, 4, false); //draw big number
+  printLittle(numDisp1.little, &lcd1); //draw decimal value in small text
+  
+  numDisp2.big, numDisp2.little = bigInt(gyroSend.Roll);  
+  bigNum2.displayLargeInt(numDisp2.big, 0, 4, false);
+  printLittle(numDisp2.little, &lcd2);
+  
+  numDisp3.big, numDisp3.little = bigInt(gpsSend.speed);  
+  bigNum3.displayLargeInt(numDisp3.big, 0, 4, false);
+  printLittle(numDisp3.little, &lcd3);
+  
+  numDisp4.big, numDisp4.little = bigInt(gpsSend.satellites);  
+  bigNum4.displayLargeInt(numDisp4.big, 0, 4, false);
+  printLittle(numDisp4.little, &lcd4);
+
+
+}
+
+void printLittle(int little, LiquidCrystal *lcd) {
+  
+  lcd->setCursor(12, 1);
+  lcd->print(".");
+  lcd->print(little);
+} //print the decimal value in small text
+
+int bigInt(float raw) {
+  int big, little;
+  int tmp;
+  tmp = raw * 10;
+  little = (int)tmp % 10;
+  big = (int)raw/10;
+  return(big, little);
 }
