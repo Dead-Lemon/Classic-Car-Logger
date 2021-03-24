@@ -4,7 +4,7 @@
 
 
 #include "MPU9250.h"
-#include <TinyGPS.h>
+#include "TinyGPS.h"
 #include "SerialTransfer.h"
 
 
@@ -36,15 +36,36 @@ struct gpsDataStruct {
     float Long, Lat;
     unsigned long fix_age;
     unsigned long date, time, age;
+    unsigned short satellites;
     float speed, alt, course;
     
 } gpsData; //all data that will be logged
 
 struct gpsSendStruct {
   
-    float speed, alt, course;  
+    float speed, alt, course;
+    unsigned short satellites;
   
 } gpsSend; //all data that will be sent to display
+
+struct deviceStatus {
+
+  bool ok;
+  
+} devState;
+
+struct deviceRequest {
+
+  bool start;
+  
+} devReq;
+
+struct sensorData {
+
+  float batVolt, engineTemp, rpm;
+  
+} sensor;
+
 
 
 
@@ -69,6 +90,8 @@ void setup() {
 void loop() {
 
   mpuUpdate();
+  gpsUpdate();
+  consoleUpdate();
   
 
   
@@ -111,10 +134,12 @@ void gpsUpdate() {
    gpsData.speed = gps.f_speed_kmph();
    gpsData.alt = gps.f_altitude();
    gpsData.course = gps.f_course();
+   gpsData.satellites = gps.satellites();
 
    gpsSend.speed = gps.f_speed_kmph(); 
    gpsSend.alt = gps.f_altitude();
    gpsSend.course = gps.f_course();
+   gpsSend.satellites = gps.satellites();
   
 
 }
@@ -129,6 +154,9 @@ void consoleUpdate() {
   uint16_t sendSize = 0; //create variable to keep track of number of bytes being sent
   sendSize = consoleData.txObj(gyroSend, sendSize); //pack 1st struct into the buffer
   sendSize = consoleData.txObj(gpsSend, sendSize); //pack 2nd struct into the buffer
+  sendSize = consoleData.txObj(devState, sendSize); 
+  sendSize = consoleData.txObj(devReq, sendSize); 
+  sendSize = consoleData.txObj(sensor, sendSize); 
   consoleData.sendData(sendSize); //send buffer
 
 }

@@ -15,9 +15,29 @@ struct gyroSendStruct {
 
 struct gpsSendStruct {
   
-    float speed, alt, course; 
+    float speed, alt, course;
+    unsigned short satellites;
   
 } gpsSend; //all data that will be sent to display
+
+struct deviceStatus {
+
+  bool ok;
+  
+} devState;
+
+struct deviceRequest {
+
+  bool start;
+  
+} devReq;
+
+struct sensorData {
+
+  float batVolt, engineTemp, rpm;
+  
+} sensor;
+
 
 //create lcd instances
 LiquidCrystal lcd1(9);
@@ -60,6 +80,9 @@ void loop() {
     uint16_t recSize=0; //create var to track incoming bytes
     recSize = consoleData.rxObj(gyroSend, recSize); //pack 1st struct into the buffer
     recSize = consoleData.rxObj(gpsSend, recSize); //pack 2nd struct into the buffer
+    recSize = consoleData.rxObj(devState, recSize); //pack 2nd struct into the buffer
+    recSize = consoleData.rxObj(devReq, recSize); //pack 2nd struct into the buffer
+    recSize = consoleData.rxObj(sensor, recSize); //pack 2nd struct into the buffer
   }
 
   int currentTime = millis() / 100; // assigns the current time since boot in tenths of a second to currentTime
