@@ -47,10 +47,7 @@ struct gpsSendStruct {
 } gpsSend; //all data that will be sent to display
 
 
-float gpsLong, gpsLat, gpsSpd;
-unsigned short gpsSat;
-unsigned long gpsAge;
-float gpsTime;
+
 
 void setup() {
   Serial.begin(115200); //used for debug and programming
@@ -94,17 +91,30 @@ void mpuUpdate() {
         gyroData.GyroZ = mpu.getGyroZ();
         gyroData.LinX = mpu.getLinearAccX();
         gyroData.LinY = mpu.getLinearAccY(); 
-        gyroData.LinZ = mpu.getLinearAccZ();  
+        gyroData.LinZ = mpu.getLinearAccZ(); 
+
+        gyroSend.Yaw = mpu.getYaw();
+        gyroSend.Pitch = mpu.getPitch();
+        gyroSend.Roll = mpu.getRoll();
+        gyroSend.AccY = mpu.getAccY(); 
+        gyroSend.GyroY = mpu.getGyroY(); 
+        gyroSend.LinY = mpu.getLinearAccY(); 
+
  }
 }
 
 
 void gpsUpdate() {
+  
    gps.f_get_position(&gpsData.Lat, &gpsData.Long, &gpsData.fix_age);
    gps.get_datetime(&gpsData.date, &gpsData.time, &gpsData.age);
    gpsData.speed = gps.f_speed_kmph();
    gpsData.alt = gps.f_altitude();
    gpsData.course = gps.f_course();
+
+   gpsSend.speed = gps.f_speed_kmph(); 
+   gpsSend.alt = gps.f_altitude();
+   gpsSend.course = gps.f_course();
   
 
 }
