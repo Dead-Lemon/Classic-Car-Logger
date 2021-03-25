@@ -11,14 +11,14 @@ struct gyroSendStruct {
   float Yaw, Pitch, Roll;
   float AccY, GyroY, LinY;
   
-} gyroSend; //all data that will be sent to display
+} gyroRecv; //all data that will be sent to display
 
 struct gpsSendStruct {
   
     float speed, alt, course;
     unsigned short satellites;
   
-} gpsSend; //all data that will be sent to display
+} gpsRecv; //all data that will be sent to display
 
 struct deviceStatus {
 
@@ -36,7 +36,7 @@ struct sensorData {
 
   float batVolt, engineTemp, rpm;
   
-} sensor;
+} sensorRecv;
 
 struct lcdSettings {
 
@@ -63,6 +63,8 @@ BigNumbers bigNum2(&lcd2);
 BigNumbers bigNum3(&lcd3);
 BigNumbers bigNum4(&lcd4);
 
+uint32_t currentMillis, prevMillis = 0;
+uint32_t lcdUpdateRate = 500;
 
 void setup() {
 
@@ -89,31 +91,35 @@ void setup() {
 
 void loop() {
 
+  currentMillis = millis();
+
   if(consoleData.available()) {
     uint16_t recSize=0; //create var to track incoming bytes
-    recSize = consoleData.rxObj(gyroSend, recSize); //pack 1st struct into the buffer
-    recSize = consoleData.rxObj(gpsSend, recSize); //pack 2nd struct into the buffer
+    recSize = consoleData.rxObj(gyroRecv, recSize); //pack 1st struct into the buffer
+    recSize = consoleData.rxObj(gpsRecv, recSize); //pack 2nd struct into the buffer
     recSize = consoleData.rxObj(devState, recSize); 
     recSize = consoleData.rxObj(devReq, recSize); 
-    recSize = consoleData.rxObj(sensor, recSize); 
+    recSize = consoleData.rxObj(sensorRecv, recSize); 
   }
 
-
-  numDisp1.big, numDisp1.little = bigInt(gyroSend.Yaw); //convert float to int and split the real and decimal values
-  bigNum1.displayLargeInt(numDisp1.big, 0, 4, false); //draw big number
-  printLittle(numDisp1.little, &lcd1); //draw decimal value in small text
+  if ((currentMillis - prevMillis) > lcdUpdateRate) {
+    numDisp1.big, numDisp1.little = bigInt(gyroRecv.Yaw); //convert float to int and split the real and decimal values
+    bigNum1.displayLargeInt(numDisp1.big, 0, 3, false); //draw big number
+    printLittle(numDisp1.little, &lcd1); //draw decimal value in small text
   
-  numDisp2.big, numDisp2.little = bigInt(gyroSend.Roll);  
-  bigNum2.displayLargeInt(numDisp2.big, 0, 4, false);
-  printLittle(numDisp2.little, &lcd2);
+    numDisp2.big, numDisp2.little = bigInt(gyroRecv.Roll);  
+    bigNum2.displayLargeInt(numDisp2.big, 0, 3, false);
+    printLittle(numDisp2.little, &lcd2);
   
-  numDisp3.big, numDisp3.little = bigInt(gpsSend.speed);  
-  bigNum3.displayLargeInt(numDisp3.big, 0, 4, false);
-  printLittle(numDisp3.little, &lcd3);
+    numDisp3.big, numDisp3.little = bigInt(gpsRecv.speed);  
+    bigNum3.displayLargeInt(numDisp3.big, 0, 3, false);
+    printLittle(numDisp3.little, &lcd3);
   
-  numDisp4.big, numDisp4.little = bigInt(gpsSend.satellites);  
-  bigNum4.displayLargeInt(numDisp4.big, 0, 4, false);
-  printLittle(numDisp4.little, &lcd4);
+    numDisp4.big, numDisp4.little = bigInt(gpsRecv.satellites);  
+    bigNum4.displayLargeInt(numDisp4.big, 0, 3, false);
+    printLittle(numDisp4.little, &lcd4);
+    prevMillis = currentMillis;
+  }
 
 
 }
@@ -127,7 +133,7 @@ void printLittle(int little, LiquidCrystal *lcd) {
 
 int bigInt(float raw) {
   int big, little;
-  int tmp;
+  float tmp;
   tmp = raw * 10; //move the decimal point up 1
   little = (int)tmp % 10; //save that decimal point as the int little
   big = (int)tmp/10; //remove the decimal point and save as the int big
