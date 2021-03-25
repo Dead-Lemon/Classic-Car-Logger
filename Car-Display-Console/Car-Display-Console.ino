@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <BigNumbers.h>
 #include "SerialTransfer.h"
+#include "SensorProfile.h"
 
 SerialTransfer consoleData;
 
