@@ -6,6 +6,7 @@
 #include "MPU9250.h"
 #include "TinyGPS.h"
 #include "SerialTransfer.h"
+#include "SensorProfiles.h"
 
 
 MPU9250 mpu; //gyro module
