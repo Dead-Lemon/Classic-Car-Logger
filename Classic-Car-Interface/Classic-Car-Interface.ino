@@ -3,23 +3,27 @@
 //base on STM32F01C8 (blue pull) due to larger rom and multiple hardware serial IO
 
 
-#include "MPU9250.h"
-#include "TinyGPS.h"
-#include "SerialTransfer.h"
-#include "STM32TimerInterrupt.h"
-#include "dataStruct.h"
+#include "MPU9250.h" //gyro interface
+#include "TinyGPS.h" //gps interface
+#include "SerialTransfer.h" //data transfer via serial
+#include "STM32TimerInterrupt.h" //hardware timer interupts
+#include "dataStruct.h" //imports the data strutures used to logging and display console coms
 
 
 //setting up RPM pulse counting
 uint32_t tachoCount = 0;
-const uint16_t tachoSample = 250; //calculate rpm every 250ms
-const float tachoFloat = 0;
-const uint16_t engineCyclders = 4; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
-const uint16_t tachoDebounce = 80; //may be needed if input is noisey
-float rpm = 0;
+uint32_t tachoAVG[4];
+const uint32_t tachoSampleRate = 250000; //calculate rpm every 250ms
+const uint8_t engineCyclders = 4; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
+float rpm[4];
+float rpmAVG = 0;
+const uint8_t rpmSampleSize = 4;
+uint8_t rpmPos = 0;
 const uint8_t tachoPin = PA1;
+
 //set up hardware timers for sampling
-STM32Timer HWTimer1(TIM2);
+STM32Timer HWTimer1(TIM1); //enable hardware timer for rpm handling
+STM32Timer HWTimer2(TIM2); //enable hardware timer for 
 
 MPU9250 mpu; //gyro module
 TinyGPS gps; //gps data parsing
@@ -42,26 +46,37 @@ void setup() {
   delay(200);
   
   pinMode(tachoPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING);
+  attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING); //enable interupt handling for tacho counting
 
-  HWTimer1.attachInterruptInterval(tachoSample * 1000, updateRPM);
+  HWTimer1.attachInterruptInterval(tachoSampleRate, sampleRPM); //hardware timer to take rpm samples
+  HWTimer2.attachInterruptInterval(tachoSampleRate, updateAll); //hardware timer to update coms and logs
 
 
 }
 
 void loop() {
 
+}
+
+void updateAll() {
   mpuUpdate();
   gpsUpdate();
+  rpmUpdate();
   consoleUpdate();
-  
-
-  
-
-
-
 
 }
+
+void rpmUpdate() {
+  float tmp = 0;
+  
+  for (int i = 0; i<4; i++) {
+    tmp += rpm[i];
+  }
+
+  engineSensor.rpm = tmp/4.0f;
+  
+}
+
 
 void mpuUpdate() {
     if (mpu.update()) { //update date info from mpu, if available)
@@ -118,7 +133,7 @@ void consoleUpdate() {
   sendSize = consoleData.txObj(gpsSend, sendSize); //pack 2nd struct into the buffer
   sendSize = consoleData.txObj(devState, sendSize); 
   sendSize = consoleData.txObj(devReq, sendSize); 
-  sendSize = consoleData.txObj(sensor, sendSize); 
+  sendSize = consoleData.txObj(engineSensor, sendSize); 
   consoleData.sendData(sendSize); //send buffer
 
 }
@@ -127,8 +142,12 @@ void tachoUpdate() {
   tachoCount++;
 }
 
-void updateRPM() {
+void sampleRPM() {
+ if (rpmPos >= rpmSampleSize) {
+  rpmPos = 0;
+ }
+ 
+ rpm[rpmPos] = ((float)tachoCount/60.0f); // (tacho count / 4 cylinders / 0.25s) * 60s = rpm
 
- // rpm = tachoCount * (
   
 }

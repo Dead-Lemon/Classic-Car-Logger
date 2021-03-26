@@ -47,4 +47,4 @@ struct sensorData {
 
   float batVolt, engineTemp, rpm;
   
-} sensor;
+} engineSensor;
