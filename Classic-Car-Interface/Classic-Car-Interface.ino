@@ -6,70 +6,26 @@
 #include "MPU9250.h"
 #include "TinyGPS.h"
 #include "SerialTransfer.h"
-#include "SensorProfiles.h"
+#include "STM32TimerInterrupt.h"
+#include "dataStruct.h"
 
+
+//setting up RPM pulse counting
+uint32_t tachoCount = 0;
+const uint16_t tachoSample = 250; //calculate rpm every 250ms
+const float tachoFloat = 0;
+const uint16_t engineCyclders = 4; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
+const uint16_t tachoDebounce = 80; //may be needed if input is noisey
+float rpm = 0;
+const uint8_t tachoPin = PA1;
+//set up hardware timers for sampling
+STM32Timer HWTimer1(TIM2);
 
 MPU9250 mpu; //gyro module
 TinyGPS gps; //gps data parsing
 SerialTransfer consoleData; //allow tranfer of data structures over serial
 
 HardwareSerial Serial2(PA3, PA2); //enable serial port 2
-
-
-struct gyroDataStruct {
-  
-  float Yaw, Pitch, Roll;
-  float AccX,AccY,AccZ;
-  float GyroX,GyroY,GyroZ;
-  float LinX,LinY,LinZ;
-  
-} gyroData; //all data that will be logged
-
-struct gyroSendStruct {
-  
-  float Yaw, Pitch, Roll;
-  float AccY, GyroY, LinY;
-  
-} gyroSend; //all data that will be sent to display
-
-struct gpsDataStruct {
-  
-    float Long, Lat;
-    unsigned long fix_age;
-    unsigned long date, time, age;
-    unsigned short satellites;
-    float speed, alt, course;
-    
-} gpsData; //all data that will be logged
-
-struct gpsSendStruct {
-  
-    float speed, alt, course;
-    unsigned short satellites;
-  
-} gpsSend; //all data that will be sent to display
-
-struct deviceStatus {
-
-  bool ok;
-  
-} devState;
-
-struct deviceRequest {
-
-  bool start;
-  
-} devReq;
-
-struct sensorData {
-
-  float batVolt, engineTemp, rpm;
-  
-} sensor;
-
-
-
-
 
 void setup() {
   Serial.begin(115200); //used for debug and programming
@@ -85,6 +41,11 @@ void setup() {
 //  mpu.calibrateMag();
   delay(200);
   
+  pinMode(tachoPin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING);
+
+  HWTimer1.attachInterruptInterval(tachoSample * 1000, updateRPM);
+
 
 }
 
@@ -160,4 +121,14 @@ void consoleUpdate() {
   sendSize = consoleData.txObj(sensor, sendSize); 
   consoleData.sendData(sendSize); //send buffer
 
+}
+
+void tachoUpdate() {
+  tachoCount++;
+}
+
+void updateRPM() {
+
+ // rpm = tachoCount * (
+  
 }
