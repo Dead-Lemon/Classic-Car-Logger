@@ -127,9 +127,10 @@ void loop() {
 
 void printLittle(int little, LiquidCrystal *lcd) {
   
-  lcd->setCursor(12, 1);
+  lcd->setCursor(9, 1);
   lcd->print(".");
   lcd->print(little);
+  
 } //print the decimal value in small text
 
 int bigInt(float raw) {
