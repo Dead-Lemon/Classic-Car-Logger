@@ -26,6 +26,11 @@ const float engineTempVcc = 3.3; // voltage used in divider circuit.
 
 const uint8_t oilPressInput = A1;
 
+//set start location, defail is london XD
+//the start locaiton is set for recording laps
+double startLAT = 51.508131, startLON = -0.128002;
+uint16_t lapCounter = 0;
+
 //set up hardware timers for sampling
 STM32Timer HWTimer1(TIM1); //enable hardware timer for updating everything
 

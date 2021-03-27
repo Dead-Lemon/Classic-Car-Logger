@@ -10,10 +10,11 @@ struct gyroDataStruct {
 struct gpsDataStruct {
   
     float Long, Lat;
-    unsigned long fix_age;
-    unsigned long date, time, age;
-    unsigned short satellites;
-    float speed, alt, course;
+    uint32_t fix_age;
+    uint32_t date, time, age;
+    uint8_t satellites;
+    float speed, alt, course, distaceToStart;
+    uint16_t laps;
     
 } gpsData; //all data that will be logged
 
