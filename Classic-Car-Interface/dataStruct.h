@@ -13,8 +13,8 @@ struct gpsDataStruct {
     uint32_t fix_age;
     uint32_t date, time, age;
     uint8_t satellites;
-    float speed, alt, course, distaceToStart;
-    uint16_t laps;
+    float speed, alt, course, distanceToStart;
+    uint16_t laps = 0;
     
 } gpsData; //all data that will be logged
 

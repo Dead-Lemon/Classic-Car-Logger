@@ -30,6 +30,11 @@ const uint8_t oilPressInput = A1;
 //the start locaiton is set for recording laps
 double startLAT = 51.508131, startLON = -0.128002;
 uint16_t lapCounter = 0;
+uint32_t lapDebounce = 60000; // 60s before it can check again when lap is found
+uint32_t lapDebounceMark = 0; //save current millis to mark delay start point
+bool leftStart = false; //check to see car has left start area, to avoid false positive in the pit
+float lapPassDist = 50; //50m from start before new lap can trigger
+float lapTriggerDist = 5; // trigger within 5 meters
 
 //set up hardware timers for sampling
 STM32Timer HWTimer1(TIM1); //enable hardware timer for updating everything
@@ -89,6 +94,19 @@ void sensorUpdate() {
 }
 
 
+void checkLap() { //checks if close to start mark, only resets after 60s and car has left 50m from start
+  if ((gpsData.distanceToStart <= lapTriggerDist) and (leftStart) and ((millis() - lapDebounceMark) < lapDebounce)) {
+    leftStart = false;
+    lapDebounceMark = millis();
+    gpsData.laps++; 
+    
+  } else if ((!leftStart) and (gpsData.distanceToStart > lapPassDist)) {
+    leftStart = true;
+  }
+
+}
+
+
 void mpuUpdate() {
   
    if (mpu.update()) { //update date info from mpu, if available)
@@ -116,7 +134,7 @@ void gpsUpdate() {
     gpsData.alt = gps.f_altitude();
     gpsData.course = gps.f_course();
     gpsData.satellites = gps.satellites();
-    
+    gpsData.distanceToStart = gps.distance_between(gpsData.Lat, gpsData.Long, startLAT, startLON);
     gpsNewData = false;
    }
 
