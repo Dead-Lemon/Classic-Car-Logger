@@ -12,18 +12,15 @@
 
 //setting up RPM pulse counting
 uint32_t tachoCount = 0;
-uint32_t tachoAVG[4];
-const uint32_t tachoSampleRate = 250000; //calculate rpm every 250ms
-const uint8_t engineCyclders = 4; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
-float rpm[4];
-float rpmAVG = 0;
-const uint8_t rpmSampleSize = 4;
-uint8_t rpmPos = 0;
+const uint32_t SampleRate = 250; //calculate rpm every 250ms
+const float engineCyclders = 4.0; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
+float rpm;
 const uint8_t tachoPin = PA1;
 
+bool gpsNewData = false;
+
 //set up hardware timers for sampling
-STM32Timer HWTimer1(TIM1); //enable hardware timer for rpm handling
-STM32Timer HWTimer2(TIM2); //enable hardware timer for 
+STM32Timer HWTimer1(TIM1); //enable hardware timer for updating everything
 
 MPU9250 mpu; //gyro module
 TinyGPS gps; //gps data parsing
@@ -42,38 +39,34 @@ void setup() {
   mpu.setup(0x68);
   delay(200);
   mpu.calibrateAccelGyro();
-//  mpu.calibrateMag();
+  mpu.calibrateMag();
   delay(200);
   
   pinMode(tachoPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING); //enable interupt handling for tacho counting
 
-  HWTimer1.attachInterruptInterval(tachoSampleRate, sampleRPM); //hardware timer to take rpm samples
-  HWTimer2.attachInterruptInterval(tachoSampleRate, updateAll); //hardware timer to update coms and logs
+  HWTimer1.attachInterruptInterval(SampleRate * 1000, updateAll); //hardware timer to update coms and logs
 
 
 }
 
 void loop() {
-
+// nothing to loop at the moment. may change...
 }
 
 void updateAll() {
+  
+  rpmUpdate();
   mpuUpdate();
   gpsUpdate();
-  rpmUpdate();
   consoleUpdate();
 
 }
 
 void rpmUpdate() {
-  float tmp = 0;
-  
-  for (int i = 0; i<4; i++) {
-    tmp += rpm[i];
-  }
 
-  engineSensor.rpm = tmp/4.0f;
+  engineSensor.rpm = ((float)tachoCount/ engineCyclders / (1/(float)SampleRate) * 60.0f); 
+  tachoCount = 0;
   
 }
 
@@ -105,24 +98,26 @@ void mpuUpdate() {
 
 
 void gpsUpdate() {
-  
-   gps.f_get_position(&gpsData.Lat, &gpsData.Long, &gpsData.fix_age);
-   gps.get_datetime(&gpsData.date, &gpsData.time, &gpsData.age);
-   gpsData.speed = gps.f_speed_kmph();
-   gpsData.alt = gps.f_altitude();
-   gpsData.course = gps.f_course();
-   gpsData.satellites = gps.satellites();
+   if (gpsNewData) {
+    gps.f_get_position(&gpsData.Lat, &gpsData.Long, &gpsData.fix_age);
+    gps.get_datetime(&gpsData.date, &gpsData.time, &gpsData.age);
+    gpsData.speed = gps.f_speed_kmph();
+    gpsData.alt = gps.f_altitude();
+    gpsData.course = gps.f_course();
+    gpsData.satellites = gps.satellites();
 
-   gpsSend.speed = gps.f_speed_kmph(); 
-   gpsSend.alt = gps.f_altitude();
-   gpsSend.course = gps.f_course();
-   gpsSend.satellites = gps.satellites();
-  
+    gpsSend.speed = gps.f_speed_kmph(); 
+    gpsSend.alt = gps.f_altitude();
+    gpsSend.course = gps.f_course();
+    gpsSend.satellites = gps.satellites();
+    gpsNewData = false;
+   }
 
 }
 
 void serialEvent1() { //hardware serial interupt when data arrives
   gps.encode(Serial1.read()); //update gps on serialEvent
+  gpsNewData = true;
   
 }
 
@@ -140,14 +135,4 @@ void consoleUpdate() {
 
 void tachoUpdate() {
   tachoCount++;
-}
-
-void sampleRPM() {
- if (rpmPos >= rpmSampleSize) {
-  rpmPos = 0;
- }
- 
- rpm[rpmPos] = ((float)tachoCount/60.0f); // (tacho count / 4 cylinders / 0.25s) * 60s = rpm
-
-  
 }
