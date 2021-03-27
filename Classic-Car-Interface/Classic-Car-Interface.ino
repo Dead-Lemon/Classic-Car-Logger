@@ -20,9 +20,11 @@ const uint8_t tachoPin = PA1;
 bool gpsNewData = false;
 
 //set engine temp sensor pin
-const uint8_t engineTempInput= A0; //engine temp sensor input from voltage divider
+const uint8_t engineTempInput = A0; //engine temp sensor input from voltage divider
 const uint16_t engineTempR1 = 4000; //set the resistor value used in the voltage divider circuit
 const float engineTempVcc = 3.3; // voltage used in divider circuit.
+
+const uint8_t oilPressInput = A1;
 
 //set up hardware timers for sampling
 STM32Timer HWTimer1(TIM1); //enable hardware timer for updating everything
@@ -78,7 +80,7 @@ void rpmUpdate() {
 
 void sensorUpdate() {
   engineSensor.engineTemp = readEngineTemp(analogRead(engineTempInput), engineTempR1, engineTempVcc);
-  
+  engineSensor.oilPress = readOilPress(analogRead(oilPressInput));
 }
 
 

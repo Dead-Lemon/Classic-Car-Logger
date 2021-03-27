@@ -31,6 +31,6 @@ struct deviceRequest {
 
 struct sensorData {
 
-  float batVolt, engineTemp, rpm;
+  float batVolt, engineTemp, oilPress, rpm;
   
 } engineSensor;
