@@ -34,6 +34,7 @@ SerialTransfer consoleData; //allow tranfer of data structures over serial
 HardwareSerial Serial2(PA3, PA2); //enable serial port 2
 
 void setup() {
+  
   Serial.begin(115200); //used for debug and programming
   Serial1.begin(9200); //interface with GPS module
   Serial2.begin(115200); //send data to display console
@@ -51,8 +52,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING); //enable interupt handling for tacho counting
 
   HWTimer1.attachInterruptInterval(SampleRate * 1000, updateAll); //hardware timer to update coms and logs
-
-
+  
 }
 
 void loop() {
@@ -62,6 +62,7 @@ void loop() {
 void updateAll() {
   
   rpmUpdate();
+  sensorUpdate();
   mpuUpdate();
   gpsUpdate();
   consoleUpdate();
@@ -75,8 +76,14 @@ void rpmUpdate() {
   
 }
 
+void sensorUpdate() {
+  engineSensor.engineTemp = readEngineTemp(analogRead(engineTempInput), engineTempR1, engineTempVcc);
+  
+}
+
 
 void mpuUpdate() {
+  
    if (mpu.update()) { //update date info from mpu, if available)
      gyroData.Yaw = mpu.getYaw();
      gyroData.Pitch = mpu.getPitch();
@@ -90,7 +97,6 @@ void mpuUpdate() {
      gyroData.LinX = mpu.getLinearAccX();
      gyroData.LinY = mpu.getLinearAccY(); 
      gyroData.LinZ = mpu.getLinearAccZ(); 
-
  }
 }
 
@@ -103,7 +109,7 @@ void gpsUpdate() {
     gpsData.alt = gps.f_altitude();
     gpsData.course = gps.f_course();
     gpsData.satellites = gps.satellites();
-
+    
     gpsNewData = false;
    }
 
