@@ -8,16 +8,21 @@
 #include "SerialTransfer.h" //data transfer via serial
 #include "STM32TimerInterrupt.h" //hardware timer interupts
 #include "dataStruct.h" //imports the data strutures used to logging and display console coms
+#include "readSensors.h"
 
 
 //setting up RPM pulse counting
 uint32_t tachoCount = 0;
 const uint32_t SampleRate = 250; //get latest values from all sensors
 const float engineCyclders = 4.0; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
-float rpm;
 const uint8_t tachoPin = PA1;
 
 bool gpsNewData = false;
+
+//set engine temp sensor pin
+const uint8_t engineTempInput= A0; //engine temp sensor input from voltage divider
+const uint16_t engineTempR1 = 4000; //set the resistor value used in the voltage divider circuit
+const float engineTempVcc = 3.3; // voltage used in divider circuit.
 
 //set up hardware timers for sampling
 STM32Timer HWTimer1(TIM1); //enable hardware timer for updating everything
