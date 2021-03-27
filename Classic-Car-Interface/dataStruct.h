@@ -7,13 +7,6 @@ struct gyroDataStruct {
   
 } gyroData; //all data that will be logged
 
-struct gyroSendStruct {
-  
-  float Yaw, Pitch, Roll;
-  float AccY, GyroY, LinY;
-  
-} gyroSend; //all data that will be sent to display
-
 struct gpsDataStruct {
   
     float Long, Lat;
@@ -23,13 +16,6 @@ struct gpsDataStruct {
     float speed, alt, course;
     
 } gpsData; //all data that will be logged
-
-struct gpsSendStruct {
-  
-    float speed, alt, course;
-    unsigned short satellites;
-  
-} gpsSend; //all data that will be sent to display
 
 struct deviceStatus {
 

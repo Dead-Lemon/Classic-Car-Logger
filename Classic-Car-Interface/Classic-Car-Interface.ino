@@ -12,7 +12,7 @@
 
 //setting up RPM pulse counting
 uint32_t tachoCount = 0;
-const uint32_t SampleRate = 250; //calculate rpm every 250ms
+const uint32_t SampleRate = 250; //get latest values from all sensors
 const float engineCyclders = 4.0; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
 float rpm;
 const uint8_t tachoPin = PA1;
@@ -32,13 +32,13 @@ void setup() {
   Serial.begin(115200); //used for debug and programming
   Serial1.begin(9200); //interface with GPS module
   Serial2.begin(115200); //send data to display console
-  consoleData.begin(Serial2);
+  consoleData.begin(Serial2); //start data exchange with display console
   Wire.begin(); //interface with MPU9250
   
   delay(200);
-  mpu.setup(0x68);
+  mpu.setup(0x68); //connect to mpu
   delay(200);
-  mpu.calibrateAccelGyro();
+  mpu.calibrateAccelGyro(); //calibrate
   mpu.calibrateMag();
   delay(200);
   
@@ -72,26 +72,19 @@ void rpmUpdate() {
 
 
 void mpuUpdate() {
-    if (mpu.update()) { //update date info from mpu, if available)
-        gyroData.Yaw = mpu.getYaw();
-        gyroData.Pitch = mpu.getPitch();
-        gyroData.Roll = mpu.getRoll();
-        gyroData.AccX = mpu.getAccX();
-        gyroData.AccY = mpu.getAccY(); 
-        gyroData.AccZ = mpu.getAccZ();
-        gyroData.GyroX = mpu.getGyroX();
-        gyroData.GyroY = mpu.getGyroY(); 
-        gyroData.GyroZ = mpu.getGyroZ();
-        gyroData.LinX = mpu.getLinearAccX();
-        gyroData.LinY = mpu.getLinearAccY(); 
-        gyroData.LinZ = mpu.getLinearAccZ(); 
-
-        gyroSend.Yaw = mpu.getYaw();
-        gyroSend.Pitch = mpu.getPitch();
-        gyroSend.Roll = mpu.getRoll();
-        gyroSend.AccY = mpu.getAccY(); 
-        gyroSend.GyroY = mpu.getGyroY(); 
-        gyroSend.LinY = mpu.getLinearAccY(); 
+   if (mpu.update()) { //update date info from mpu, if available)
+     gyroData.Yaw = mpu.getYaw();
+     gyroData.Pitch = mpu.getPitch();
+     gyroData.Roll = mpu.getRoll();
+     gyroData.AccX = mpu.getAccX();
+     gyroData.AccY = mpu.getAccY(); 
+     gyroData.AccZ = mpu.getAccZ();
+     gyroData.GyroX = mpu.getGyroX();
+     gyroData.GyroY = mpu.getGyroY(); 
+     gyroData.GyroZ = mpu.getGyroZ();
+     gyroData.LinX = mpu.getLinearAccX();
+     gyroData.LinY = mpu.getLinearAccY(); 
+     gyroData.LinZ = mpu.getLinearAccZ(); 
 
  }
 }
@@ -106,10 +99,6 @@ void gpsUpdate() {
     gpsData.course = gps.f_course();
     gpsData.satellites = gps.satellites();
 
-    gpsSend.speed = gps.f_speed_kmph(); 
-    gpsSend.alt = gps.f_altitude();
-    gpsSend.course = gps.f_course();
-    gpsSend.satellites = gps.satellites();
     gpsNewData = false;
    }
 
@@ -124,10 +113,9 @@ void serialEvent1() { //hardware serial interupt when data arrives
 void consoleUpdate() {
 
   uint16_t sendSize = 0; //create variable to keep track of number of bytes being sent
-  sendSize = consoleData.txObj(gyroSend, sendSize); //pack 1st struct into the buffer
-  sendSize = consoleData.txObj(gpsSend, sendSize); //pack 2nd struct into the buffer
+  sendSize = consoleData.txObj(gyroData, sendSize); //pack 1st struct into the buffer
+  sendSize = consoleData.txObj(gpsData, sendSize); //pack 2nd struct into the buffer
   sendSize = consoleData.txObj(devState, sendSize); 
-  sendSize = consoleData.txObj(devReq, sendSize); 
   sendSize = consoleData.txObj(engineSensor, sendSize); 
   consoleData.sendData(sendSize); //send buffer
 
