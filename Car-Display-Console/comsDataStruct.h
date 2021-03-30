@@ -14,7 +14,8 @@ struct gpsDataStruct {
     uint32_t date, time, age;
     uint8_t satellites;
     float speed, alt, course, distanceToStart;
-    uint16_t laps = 0;
+    uint16_t laps;
+    uint32_t  laptime, laptimeOffset, lastLap = 0;
     
 } gpsData; //all data that will be logged
 
