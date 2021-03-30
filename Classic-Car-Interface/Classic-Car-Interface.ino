@@ -7,12 +7,18 @@
 #include "TinyGPS.h" //gps interface
 #include "SerialTransfer.h" //data transfer via serial
 #include "STM32TimerInterrupt.h" //hardware timer interupts
-#include "SdFat.h"
 
 #include "dataStruct.h" //imports the data strutures used to logging and display console coms
 #include "readSensors.h"
 #include "IOmapping.h"
 
+#include "SPI.h"
+#include "SdFat.h"
+#define SD1_CONFIG SdSpiConfig(SDsel, SHARED_SPI, SD_SCK_MHZ(18), &SPI)
+SdFs sd1;
+FsFile logFile;
+FsFile logDir;
+uint32_t logFileNum = 0; //number used to create next log file
 
 //setting up RPM pulse counting
 uint32_t tachoCount = 0;
@@ -41,6 +47,8 @@ MPU9250 mpu; //gyro module
 TinyGPS gps; //gps data parsing
 SerialTransfer consoleData; //allow tranfer of data structures over serial
 
+
+
 HardwareSerial Serial2(PA3, PA2); //enable serial port 2
 
 void setup() {
@@ -50,6 +58,22 @@ void setup() {
   Serial2.begin(115200); //send data to display console
   consoleData.begin(Serial2); //start data exchange with display console
   Wire.begin(); //interface with MPU9250
+
+  sd1.begin(SD1_CONFIG); //start sdcard interfdace
+
+ uint16_t rootFileCount = 0;
+ logDir.open("/"); 
+ while (logFile.openNext(&logDir, O_RDONLY)) {
+    if (!logFile.isHidden()) {
+      rootFileCount++;
+    }
+    logFile.close();
+ }
+ logFileNum = rootFileCount++;
+
+  
+  
+  
   
   delay(200);
   mpu.setup(0x68); //connect to mpu
