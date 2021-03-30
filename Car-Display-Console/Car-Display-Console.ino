@@ -8,8 +8,6 @@
 
 SerialTransfer consoleData;
 
-
-
 struct lcdSettings {
 
   int brightness;
@@ -65,6 +63,10 @@ void setup() {
 
   delay(2000);  
 
+  lcd1.clear(); // clear display
+  lcd2.clear();
+  lcd3.clear();
+  lcd4.clear();
   
 }
 

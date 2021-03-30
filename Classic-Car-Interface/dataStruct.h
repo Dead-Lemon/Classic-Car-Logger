@@ -35,19 +35,3 @@ struct sensorData {
   float batVolt, engineTemp, oilPress, rpm;
   
 } engineSensor;
-
-struct loggingStruct
-{
-  uint8_t slaveID;
-  uint8_t senseorder;
-  bool warnstatus;
-  uint8_t sensefault;
-  uint8_t senseglyph;
-  float sensevals;
-  int8_t units;
-  const float sensemaxvals;
-  const float senseminvals;
-  const float sensewarnhivals;
-  const float sensewarnlowvals;
-  const char sensename[13];
-} logger;

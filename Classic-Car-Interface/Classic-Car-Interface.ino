@@ -7,6 +7,8 @@
 #include "TinyGPS.h" //gps interface
 #include "SerialTransfer.h" //data transfer via serial
 #include "STM32TimerInterrupt.h" //hardware timer interupts
+#include "SdFat.h"
+
 #include "dataStruct.h" //imports the data strutures used to logging and display console coms
 #include "readSensors.h"
 #include "IOmapping.h"
