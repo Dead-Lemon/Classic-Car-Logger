@@ -35,7 +35,7 @@ BigNumbers bigNum3(&lcd3);
 BigNumbers bigNum4(&lcd4);
 
 uint32_t currentMillis, prevMillis = 0;
-uint32_t lcdUpdateRate = 500;
+uint32_t lcdUpdateRate = 100;
 
 void setup() {
 
@@ -73,19 +73,19 @@ void loop() {
   }
 
   if ((currentMillis - prevMillis) > lcdUpdateRate) {
-    numDisp1.big, numDisp1.little = bigInt(gyroRecv.Yaw); //convert float to int and split the real and decimal values
+    numDisp1.big, numDisp1.little = bigInt(gyroData.Yaw); //convert float to int and split the real and decimal values
     bigNum1.displayLargeInt(numDisp1.big, 0, 3, false); //draw big number
     printLittle(numDisp1.little, &lcd1); //draw decimal value in small text
   
-    numDisp2.big, numDisp2.little = bigInt(gyroRecv.Roll);  
+    numDisp2.big, numDisp2.little = bigInt(gyroData.Roll);  
     bigNum2.displayLargeInt(numDisp2.big, 0, 3, false);
     printLittle(numDisp2.little, &lcd2);
   
-    numDisp3.big, numDisp3.little = bigInt(gpsRecv.speed);  
+    numDisp3.big, numDisp3.little = bigInt(gpsData.speed);  
     bigNum3.displayLargeInt(numDisp3.big, 0, 3, false);
     printLittle(numDisp3.little, &lcd3);
   
-    numDisp4.big, numDisp4.little = bigInt(gpsRecv.satellites);  
+    numDisp4.big, numDisp4.little = bigInt(gpsData.satellites);  
     bigNum4.displayLargeInt(numDisp4.big, 0, 3, false);
     printLittle(numDisp4.little, &lcd4);
     prevMillis = currentMillis;
