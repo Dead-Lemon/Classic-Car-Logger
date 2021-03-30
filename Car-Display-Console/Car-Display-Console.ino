@@ -66,11 +66,10 @@ void loop() {
 
   if(consoleData.available()) {
     uint16_t recSize=0; //create var to track incoming bytes
-    recSize = consoleData.rxObj(gyroRecv, recSize); //pack 1st struct into the buffer
-    recSize = consoleData.rxObj(gpsRecv, recSize); //pack 2nd struct into the buffer
+    recSize = consoleData.rxObj(gyroData, recSize); //pack 1st struct into the buffer
+    recSize = consoleData.rxObj(gpsData, recSize); //pack 2nd struct into the buffer
     recSize = consoleData.rxObj(devState, recSize); 
-    recSize = consoleData.rxObj(devReq, recSize); 
-    recSize = consoleData.rxObj(sensorRecv, recSize); 
+    recSize = consoleData.rxObj(engineSensor, recSize); 
   }
 
   if ((currentMillis - prevMillis) > lcdUpdateRate) {
