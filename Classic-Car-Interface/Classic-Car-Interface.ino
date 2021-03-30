@@ -46,7 +46,7 @@ STM32Timer HWTimer1(TIM1); //enable hardware timer for updating everything
 MPU9250 mpu; //gyro module
 TinyGPS gps; //gps data parsing
 SerialTransfer consoleData; //allow tranfer of data structures over serial
-
+auto fileName = logFileNum + ".csv";
 
 
 HardwareSerial Serial2(PA3, PA2); //enable serial port 2
@@ -70,11 +70,13 @@ void setup() {
     logFile.close();
  }
  logFileNum = rootFileCount++;
- char fileName = (char)rootFileCount;
-
-  
-  
-  
+ fileName = rootFileCount+".csv"; //not sure if using auto is a good idea?
+ if (logFile.open(fileName, O_CREAT | O_WRITE | O_APPEND)) { //print csv header
+  logFile.print(csvHead);
+  logFile.sync();
+  logFile.close();
+ }
+   
   
   delay(200);
   mpu.setup(0x68); //connect to mpu
@@ -187,7 +189,50 @@ void tachoUpdate() {
 }
 
 void writeLogs() {
+ 
+ if (logFile.open(fileName, O_CREAT | O_WRITE | O_APPEND)) { //print csv header
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(gpsData.laptime);  
+  logFile.print(",");
+  logFile.print(gpsData.lastLap);  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis());  
+  logFile.print(",");
+  logFile.print(millis()); 
 
-//  logFile.open
+  logFile.sync();
+  logFile.close();
+ }
   
 }
