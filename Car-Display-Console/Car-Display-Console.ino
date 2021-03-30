@@ -58,10 +58,10 @@ void setup() {
   lcd3.clear();
   lcd4.clear();
 
-  lcd1.print("SPEEDOPHILE");
-  lcd2.print("TOUCHING");
-  lcd3.print("YOUR");
-  lcd4.print("CAR");
+  lcd1.print("  SPEEDOPHILE  ");
+  lcd2.print("    TOUCHING   ");
+  lcd3.print("      YOUR     ");
+  lcd4.print(" ...  CAR   ...");
 
   delay(2000);  
 
