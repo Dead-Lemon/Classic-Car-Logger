@@ -1,17 +1,22 @@
-//expected data structures from car interface module
-struct gyroSendStruct {
+struct gyroDataStruct {
   
   float Yaw, Pitch, Roll;
-  float AccY, GyroY, LinY;
+  float AccX,AccY,AccZ;
+  float GyroX,GyroY,GyroZ;
+  float LinX,LinY,LinZ;
   
-} gyroRecv; //all data that will be sent to display
+} gyroData; //all data that will be logged
 
-struct gpsSendStruct {
+struct gpsDataStruct {
   
-    float speed, alt, course;
-    unsigned short satellites;
-  
-} gpsRecv; //all data that will be sent to display
+    float Long, Lat;
+    uint32_t fix_age;
+    uint32_t date, time, age;
+    uint8_t satellites;
+    float speed, alt, course, distanceToStart;
+    uint16_t laps = 0;
+    
+} gpsData; //all data that will be logged
 
 struct deviceStatus {
 
@@ -27,6 +32,6 @@ struct deviceRequest {
 
 struct sensorData {
 
-  float batVolt, engineTemp, rpm;
+  float batVolt, engineTemp, oilPress, rpm;
   
-} sensorRecv;
+} engineSensor;
