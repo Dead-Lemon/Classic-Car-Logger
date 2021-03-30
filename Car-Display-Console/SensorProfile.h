@@ -15,6 +15,21 @@ typedef struct
 } SingleSensor;
 
 
+const uint8_t totalsensors = 9; //this is the actual number of definitions 
+
+SingleSensor Sensors[totalsensors] = {
+ //slaveID  senseorder  warnstatus  sensefault senseglyphs sensevals  units maxvals minvals warnhivals warnlovals  sensename       
+  {1,       1,          false,      0,         1,           0,          1,    120,     0,      29,        0,        "ENG TEMP"}, 
+  {2,       2,          false,      0,         2,           0,          0,    900,    -40,     750,       0,        "SPEED"}, 
+  {3,       3,          false,      0,         3,           0,          0,    150,    -40,     140,       0,        "RPM"}, 
+  {4,       4,          false,      0,         4,           0,          1,    72,     0,       65,        40,       "Acceleration"}, 
+  {5,       5,          false,      0,         5,           0,          1,    72,     0,       60,        20,       "Altitude"}, 
+  {6,       6,          false,      0,         6,           0,          0,    150,    -40,     100,       0,        "Course"}, 
+  {7,       7,          false,      0,         7,           0,          1,    72,     0,       60,        20,       "other"}, 
+  {8,       8,          false,      0,         7,           0,          0,    150,    -40,     100,       0,        "Oil Temp"}, 
+  {9,       9,          false,      0,         7,           0,          2,    1,      0,       999,       1,        "Coolant Lvl"} 
+};
+
 byte degCBMP[] =
 {
   B11100,
@@ -37,21 +52,4 @@ char degBMP[8] =
   B00000,
   B00000,
   B00000
-};
-
-
-
-const uint8_t totalsensors = 9; //this is the actual number of definitions 
-
-SingleSensor Sensors[totalsensors] = {
- //slaveID  senseorder  warnstatus  sensefault senseglyphs sensevals  units maxvals minvals warnhivals warnlovals  sensename       
-  {1,       1,          false,      0,         1,           0,          1,    120,     0,      29,        0,        "ENG TEMP"}, 
-  {2,       2,          false,      0,         2,           0,          0,    900,    -40,     750,       0,        "SPEED"}, 
-  {3,       3,          false,      0,         3,           0,          0,    150,    -40,     140,       0,        "RPM"}, 
-  {4,       4,          false,      0,         4,           0,          1,    72,     0,       65,        40,       "Acceleration"}, 
-  {5,       5,          false,      0,         5,           0,          1,    72,     0,       60,        20,       "Altitude"}, 
-  {6,       6,          false,      0,         6,           0,          0,    150,    -40,     100,       0,        "Course"}, 
-  {7,       7,          false,      0,         7,           0,          1,    72,     0,       60,        20,       "other"}, 
-  {8,       8,          false,      0,         7,           0,          0,    150,    -40,     100,       0,        "Oil Temp"}, 
-  {9,       9,          false,      0,         7,           0,          2,    1,      0,       999,       1,        "Coolant Lvl"} 
 };

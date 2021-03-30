@@ -4,6 +4,7 @@
 #include "SerialTransfer.h"
 #include "SensorProfile.h"
 #include "comsDataStruct.h"
+#include "IOmapping.h"
 
 SerialTransfer consoleData;
 
@@ -18,16 +19,16 @@ struct lcdSettings {
 
 struct numDisplay {
  
-  int big, little = 0;
-  int size = 4;
+  int32_t big, little = 0;
+  int8_t size = 3;
   
 } numDisp1, numDisp2, numDisp3, numDisp4; //store converted float for big number display
 
 //create lcd instances
-LiquidCrystal lcd1(9);
-LiquidCrystal lcd2(10);
-LiquidCrystal lcd3(11);
-LiquidCrystal lcd4(12);
+LiquidCrystal lcd1(lcd1_sel);
+LiquidCrystal lcd2(lcd2_sel);
+LiquidCrystal lcd3(lcd3_sel);
+LiquidCrystal lcd4(lcd4_sel);
 
 BigNumbers bigNum1(&lcd1);
 BigNumbers bigNum2(&lcd2);
