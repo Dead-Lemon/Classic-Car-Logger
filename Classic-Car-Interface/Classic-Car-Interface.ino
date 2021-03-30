@@ -9,28 +9,24 @@
 #include "STM32TimerInterrupt.h" //hardware timer interupts
 #include "dataStruct.h" //imports the data strutures used to logging and display console coms
 #include "readSensors.h"
+#include "IOmapping.h"
 
 
 //setting up RPM pulse counting
 uint32_t tachoCount = 0;
 const uint32_t SampleRate = 250; //get latest values from all sensors
 const float engineCyclders = 4.0; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
-const uint8_t tachoPin = PA1;
-
 bool gpsNewData = false;
 
 //set engine temp sensor pin
-const uint8_t engineTempInput = A0; //engine temp sensor input from voltage divider
 const uint16_t engineTempR1 = 4000; //set the resistor value used in the voltage divider circuit
 const float engineTempVcc = 3.3; // voltage used in divider circuit.
-
-const uint8_t oilPressInput = A1;
 
 //set start location, defail is london XD
 //the start locaiton is set for recording laps
 double startLAT = 51.508131, startLON = -0.128002;
 uint16_t lapCounter = 0;
-uint32_t lapDebounce = 60000; // 60s before it can check again when lap is found
+uint32_t lapDebounce = 30000; // 30s before it can check again when lap is found
 uint32_t lapDebounceMark = 0; //save current millis to mark delay start point
 bool leftStart = false; //check to see car has left start area, to avoid false positive in the pit
 float lapPassDist = 50; //50m from start before new lap can trigger
