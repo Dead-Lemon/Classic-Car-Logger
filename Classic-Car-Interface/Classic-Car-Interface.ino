@@ -70,6 +70,7 @@ void setup() {
     logFile.close();
  }
  logFileNum = rootFileCount++;
+ char fileName = (char)rootFileCount;
 
   
   
@@ -116,11 +117,15 @@ void sensorUpdate() {
 }
 
 
-void checkLap() { //checks if close to start mark, only resets after 60s and car has left 50m from start
+void checkLap() { //checks if close to start mark, only resets after 60s and car has left 50m from start.
+  gpsData.laptime = millis() - gpsData.laptimeOffset;
   if ((gpsData.distanceToStart <= lapTriggerDist) and (leftStart) and ((millis() - lapDebounceMark) < lapDebounce)) {
+    gpsData.lastLap = gpsData.laptime;
+    gpsData.laptimeOffset = millis();
     leftStart = false;
     lapDebounceMark = millis();
-    gpsData.laps++; 
+    gpsData.laps++;   
+
     
   } else if ((!leftStart) and (gpsData.distanceToStart > lapPassDist)) {
     leftStart = true;
@@ -181,4 +186,10 @@ void consoleUpdate() {
 
 void tachoUpdate() {
   tachoCount++;
+}
+
+void writeLogs() {
+
+//  logFile.open
+  
 }

@@ -8,5 +8,5 @@ const uint8_t engineTempInput = A0; //engine temp sensor input from voltage divi
 
 //MPU i2c SDA = ?? SDC = ??
 
-//SD card SPI CLK = ?? MISO ?? MOSI ??
+//SD card SPI CLK = PA5 MISO PA6 MOSI PA7
 const uint8_t SDsel = PA4; //spi chip select for sd card
