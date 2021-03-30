@@ -189,16 +189,26 @@ void tachoUpdate() {
 }
 
 void writeLogs() {
- 
+ //Time,UTC Time,Lap,Sector,Predicted Lap Time,Predicted vs Best Lap,GPS_Update,GPS_Delay,Latitude,Longitude,Altitude (m),speed (KPH),Heading,Accuracy (m),Accel X,Accel Y,Accel Z,Brake (calculated),Engine Speed (RPM),Throttle Position (%),Brake (%)"};
+
  if (logFile.open(fileName, O_CREAT | O_WRITE | O_APPEND)) { //print csv header
-  logFile.print(millis());  
+  logFile.print(millis());  //cpu time
+  logFile.print(",");
+  logFile.print(gpsData.date); //date
+  logFile.print(" ");
+  logFile.print(gpsData.time);  //time
+  logFile.print(",");
+  logFile.print(gpsData.laps);  //lap count
+  logFile.print(",");
+  logFile.print(0); //predicted lap time
+  logFile.print(",");
+  logFile.print(0); //prediceted vs best
   logFile.print(",");
   logFile.print(gpsData.laptime);  
   logFile.print(",");
   logFile.print(gpsData.lastLap);  
   logFile.print(",");
-  logFile.print(millis());  
-  logFile.print(",");
+
   logFile.print(millis());  
   logFile.print(",");
   logFile.print(millis());  
