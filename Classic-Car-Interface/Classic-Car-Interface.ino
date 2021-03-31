@@ -200,46 +200,39 @@ void writeLogs() {
   logFile.print(",");
   logFile.print(gpsData.laps);  //lap count
   logFile.print(",");
-  logFile.print(0); //predicted lap time
+  logFile.print(gpsData.laptime); //predicted lap time
   logFile.print(",");
-  logFile.print(0); //prediceted vs best
+  logFile.print(gpsData.laptime - gpsData.lastLap); //prediceted vs best (need to look act saving best time)
   logFile.print(",");
-  logFile.print(gpsData.laptime);  
+  logFile.print(1);  //GPS_Update, may change to show state of gps, since logs write faster than gps update
   logFile.print(",");
-  logFile.print(gpsData.lastLap);  
+  logFile.print(gpsData.age);  //GPS_Delay
   logFile.print(",");
-
-  logFile.print(millis());  
+  logFile.print(gpsData.Lat);  //Latitude
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gpsData.Long);  //Longitude
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gpsData.alt);  //Altitude
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gpsData.speed);  //speed
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gpsData.course);  //Heading
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gyroData.AccX);  //Accel X
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gyroData.AccY);  //Accel Y
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gyroData.AccZ);  //Accel Z
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(0);  //Brake
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(0);  //throttle
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gyroData.Roll);  //roll
   logFile.print(",");
-  logFile.print(millis());  
+  logFile.print(gyroData.Pitch);  //pitch
   logFile.print(",");
-  logFile.print(millis());  
-  logFile.print(",");
-  logFile.print(millis());  
-  logFile.print(",");
-  logFile.print(millis());  
-  logFile.print(",");
-  logFile.print(millis()); 
+  logFile.print(gyroData.Yaw);  //yaw
 
   logFile.sync();
   logFile.close();
