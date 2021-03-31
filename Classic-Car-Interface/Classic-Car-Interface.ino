@@ -93,7 +93,22 @@ void setup() {
 }
 
 void loop() {
-// nothing to loop at the moment. may change...
+  
+  if(consoleData.available()) //process data if console sends an update
+  {
+    // use this variable to keep track of how many
+    // bytes we've processed from the receive buffer
+    uint16_t recSize = 0;
+    recSize = consoleData.rxObj(devReq, recSize);
+  }
+
+  if ((!devState.marked) and (devReq.markHome)) { //input from console to mark lap start/home position
+    startLAT = gpsData.Lat;
+    startLON = gpsData.Long;
+    devState.marked = true; //marked stops loop from retriggering
+  } else if ((devState.marked) and (!devReq.markHome)) {
+    devState.marked = false; //reset marked only marked home returns to zero, allowing further update if needed.
+  }
 }
 
 void updateAll() {
@@ -183,6 +198,7 @@ void consoleUpdate() {
   consoleData.sendData(sendSize); //send buffer
 
 }
+
 
 void tachoUpdate() {
   tachoCount++;

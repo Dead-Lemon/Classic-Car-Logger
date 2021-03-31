@@ -101,6 +101,8 @@ void loop() {
     prevMillis = currentMillis;
   }
 
+  
+
 
 }
 
@@ -119,4 +121,11 @@ int bigInt(float raw) {
   little = (int)tmp % 10; //save that decimal point as the int little
   big = (int)tmp/10; //remove the decimal point and save as the int big
   return(big, little);
+}
+
+void sendData() {
+
+  uint16_t sendSize = 0; //create variable to keep track of number of bytes being sent
+  sendSize = consoleData.txObj(devReq, sendSize); //pack 1st struct into the buffer 
+  consoleData.sendData(sendSize); //send buffer
 }

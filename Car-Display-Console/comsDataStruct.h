@@ -21,13 +21,13 @@ struct gpsDataStruct {
 
 struct deviceStatus {
 
-  bool ok;
+  bool ok, started, marked;
   
 } devState;
 
 struct deviceRequest {
 
-  bool start;
+  bool start, markHome;
   
 } devReq;
 
