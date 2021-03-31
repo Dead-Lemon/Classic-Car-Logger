@@ -53,9 +53,9 @@ HardwareSerial Serial2(PA3, PA2); //enable serial port 2
 
 void setup() {
   
-  Serial.begin(115200); //used for debug and programming
-  Serial1.begin(9200); //interface with GPS module
-  Serial2.begin(115200); //send data to display console
+  Serial.begin(115200); //Start debug interface
+  Serial1.begin(9200); //start listening to GPS serial updates
+  Serial2.begin(115200); //start display console serial interface
   consoleData.begin(Serial2); //start data exchange with display console
   Wire.begin(); //interface with MPU9250
 
@@ -204,7 +204,7 @@ void writeLogs() {
   logFile.print(",");
   logFile.print(gpsData.laptime - gpsData.lastLap); //prediceted vs best (need to look act saving best time)
   logFile.print(",");
-  logFile.print(1);  //GPS_Update, may change to show state of gps, since logs write faster than gps update
+  logFile.print(gpsNewData);  //GPS_Update, show if GPS returned new info, as it only updates 1/sec
   logFile.print(",");
   logFile.print(gpsData.age);  //GPS_Delay
   logFile.print(",");
