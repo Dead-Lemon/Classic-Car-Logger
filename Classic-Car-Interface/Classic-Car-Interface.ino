@@ -48,15 +48,16 @@ TinyGPS gps; //gps data parsing
 SerialTransfer consoleData; //allow tranfer of data structures over serial
 auto fileName = logFileNum + ".csv";
 
-
+//HardwareSerial Serial1(PA10, PA9); //enable serial port 1
 HardwareSerial Serial2(PA3, PA2); //enable serial port 2
+HardwareSerial Serial3(PB11, PB10); //enable serial port 3
 
 void setup() {
   
-  Serial.begin(115200); //Start debug interface
-  Serial1.begin(9200); //start listening to GPS serial updates
-  Serial2.begin(115200); //start display console serial interface
-  consoleData.begin(Serial2); //start data exchange with display console
+  Serial1.begin(115200); //Start debug interface
+  Serial2.begin(9200); //start listening to GPS serial updates
+  Serial3.begin(115200); //start display console serial interface
+  consoleData.begin(Serial3); //start data exchange with display console
   Wire.begin(); //interface with MPU9250
 
   sd1.begin(SD1_CONFIG); //start sdcard interfdace
@@ -81,9 +82,9 @@ void setup() {
   delay(200);
   mpu.setup(0x68); //connect to mpu
   delay(200);
-  mpu.calibrateAccelGyro(); //calibrate
-  mpu.calibrateMag();
-  delay(200);
+  //mpu.calibrateAccelGyro(); //calibrate Disabled as result is strange, easier to just zero current values
+  //mpu.calibrateMag();
+  //delay(200);
   
   pinMode(tachoPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING); //enable interupt handling for tacho counting, calls tachoUpdate when falling trigger is detected
@@ -182,8 +183,8 @@ void gpsUpdate() {
 
 }
 
-void serialEvent1() { //hardware serial interupt when data arrives
-  gps.encode(Serial1.read()); //update gps on serialEvent
+void serialEvent2() { //hardware serial interupt when data arrives
+  gps.encode(Serial2.read()); //update gps on serialEvent
   gpsNewData = true;
   
 }
