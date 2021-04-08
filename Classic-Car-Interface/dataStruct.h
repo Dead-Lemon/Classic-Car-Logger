@@ -21,7 +21,7 @@ struct gpsDataStruct {
 
 struct deviceStatus {
 
-  bool ok, started, marked;
+  bool SDcardOk, ok, started, marked;
   
 } devState;
 

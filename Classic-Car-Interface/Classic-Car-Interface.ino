@@ -13,11 +13,8 @@
 #include "IOmapping.h"
 
 #include "SPI.h"
-#include "SdFat.h"
-#define SD1_CONFIG SdSpiConfig(SDsel, SHARED_SPI, SD_SCK_MHZ(18), &SPI)
-SdFs sd1;
-FsFile logFile;
-FsFile logDir;
+#include "SD.h"
+const uint8_t chipSelect = PA4;
 uint32_t logFileNum = 0; //number used to create next log file
 
 //setting up RPM pulse counting
@@ -55,30 +52,17 @@ HardwareSerial Serial3(PB11, PB10); //enable serial port 3
 void setup() {
   
   Serial1.begin(115200); //Start debug interface
+  Serial1.println("Starting");
   Serial2.begin(9200); //start listening to GPS serial updates
   Serial3.begin(115200); //start display console serial interface
   consoleData.begin(Serial3); //start data exchange with display console
   Wire.begin(); //interface with MPU9250
-
-  sd1.begin(SD1_CONFIG); //start sdcard interfdace
-
- uint16_t rootFileCount = 0;
- logDir.open("/"); 
- while (logFile.openNext(&logDir, O_RDONLY)) {
-    if (!logFile.isHidden()) {
-      rootFileCount++;
-    }
-    logFile.close();
- }
- logFileNum = rootFileCount++;
- fileName = rootFileCount+".csv"; //not sure if using auto is a good idea?
- if (logFile.open(fileName, O_CREAT | O_WRITE | O_APPEND)) { //print csv header
-  logFile.print(csvHead);
-  logFile.sync();
-  logFile.close();
- }
-   
   
+  Serial1.println("Checking For SD Card SD");
+  // see if the card is present and can be initialized:
+  checkSD();
+
+  Serial1.println("Initializing MPU");
   delay(200);
   mpu.setup(0x68); //connect to mpu
   delay(200);
@@ -119,6 +103,12 @@ void updateAll() {
   mpuUpdate();
   gpsUpdate();
   consoleUpdate();
+  
+  if (devState.SDcardOk) {
+    writeLogs();
+  } else {
+   checkSD(); 
+  }
 
 }
 
@@ -205,10 +195,21 @@ void tachoUpdate() {
   tachoCount++;
 }
 
-void writeLogs() {
- //Time,UTC Time,Lap,Sector,Predicted Lap Time,Predicted vs Best Lap,GPS_Update,GPS_Delay,Latitude,Longitude,Altitude (m),speed (KPH),Heading,Accuracy (m),Accel X,Accel Y,Accel Z,Brake (calculated),Engine Speed (RPM),Throttle Position (%),Brake (%)"};
+void checkSD() {
+  if (!SD.begin(chipSelect)) {
+    Serial1.println("Insert SD card or logging cannot occur");
+    devState.SDcardOk = false;
+  } else {
+    Serial1.println("SD card detected!");
+    devState.SDcardOk = true;
+  }
+}
 
- if (logFile.open(fileName, O_CREAT | O_WRITE | O_APPEND)) { //print csv header
+void writeLogs() {
+ String csvHead = "Time,UTC Time,Lap,Sector,Predicted Lap Time,Predicted vs Best Lap,GPS_Update,GPS_Delay,Latitude,Longitude,Altitude (m),speed (KPH),Heading,Accuracy (m),Accel X,Accel Y,Accel Z,Brake (calculated),Engine Speed (RPM),Throttle Position (%),Brake (%)";
+ Serial1.println("writing logs");
+ File logFile = SD.open("datalog.txt", FILE_WRITE);  //print csv header
+ if (logFile) {
   logFile.print(millis());  //cpu time
   logFile.print(",");
   logFile.print(gpsData.date); //date
@@ -249,9 +250,7 @@ void writeLogs() {
   logFile.print(",");
   logFile.print(gyroData.Pitch);  //pitch
   logFile.print(",");
-  logFile.print(gyroData.Yaw);  //yaw
-
-  logFile.sync();
+  logFile.println(gyroData.Yaw);  //yaw
   logFile.close();
  }
   
