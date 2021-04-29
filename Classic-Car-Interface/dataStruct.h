@@ -3,7 +3,7 @@ struct gyroDataStruct {
   float Yaw, Pitch, Roll;
   float AccX,AccY,AccZ;
   float GyroX,GyroY,GyroZ;
-  float LinX,LinY,LinZ;
+//  float LinX,LinY,LinZ; does linear accelleration even make sense in this project scope? removing for sake of rom space & transfer speeds
   
 } gyroData; //all data that will be logged
 

@@ -37,6 +37,9 @@ bool leftStart = false; //check to see car has left start area, to avoid false p
 float lapPassDist = 50; //50m from start before new lap can trigger
 float lapTriggerDist = 5; // trigger within 5 meters
 
+
+bool ledState = false;
+
 //set up hardware timers for sampling
 STM32Timer HWTimer1(TIM1); //enable hardware timer for updating everything
 
@@ -50,15 +53,15 @@ HardwareSerial Serial2(PA3, PA2); //enable serial port 2
 HardwareSerial Serial3(PB11, PB10); //enable serial port 3
 
 void setup() {
-  
+
   Serial1.begin(115200); //Start debug interface
   Serial1.println("Starting");
   Serial2.begin(9200); //start listening to GPS serial updates
   Serial3.begin(115200); //start display console serial interface
-  consoleData.begin(Serial3); //start data exchange with display console
+  consoleData.begin(Serial1); //start data exchange with display console
   Wire.begin(); //interface with MPU9250
   
-  Serial1.println("Checking For SD Card SD");
+  //Serial1.println("Checking For SD Card SD");
   // see if the card is present and can be initialized:
   checkSD();
 
@@ -66,9 +69,11 @@ void setup() {
   delay(200);
   mpu.setup(0x68); //connect to mpu
   delay(200);
-  //mpu.calibrateAccelGyro(); //calibrate Disabled as result is strange, easier to just zero current values
+  //mpu.calibrateAccelGyro(); //calibrate Disabled as result is strange output post operation (may be due to other IO not being used on MPU breakout board?), easier to just zero current values
   //mpu.calibrateMag();
   //delay(200);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, ledState);
   
   pinMode(tachoPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING); //enable interupt handling for tacho counting, calls tachoUpdate when falling trigger is detected
@@ -94,7 +99,12 @@ void loop() {
   } else if ((devState.marked) and (!devReq.markHome)) {
     devState.marked = false; //reset marked only marked home returns to zero, allowing further update if needed.
   }
+
+  consoleUpdate();
+  digitalWrite(LED_BUILTIN, ledState);
+  ledState = !ledState;
 }
+
 
 void updateAll() {
   
@@ -102,7 +112,7 @@ void updateAll() {
   sensorUpdate();
   mpuUpdate();
   gpsUpdate();
-  consoleUpdate();
+
   
   if (devState.SDcardOk) {
     writeLogs();
@@ -152,9 +162,9 @@ void mpuUpdate() {
      gyroData.GyroX = mpu.getGyroX();
      gyroData.GyroY = mpu.getGyroY(); 
      gyroData.GyroZ = mpu.getGyroZ();
-     gyroData.LinX = mpu.getLinearAccX();
-     gyroData.LinY = mpu.getLinearAccY(); 
-     gyroData.LinZ = mpu.getLinearAccZ(); 
+//     gyroData.LinX = mpu.getLinearAccX();
+//     gyroData.LinY = mpu.getLinearAccY(); 
+//     gyroData.LinZ = mpu.getLinearAccZ(); not logging linear acc.
  }
 }
 
