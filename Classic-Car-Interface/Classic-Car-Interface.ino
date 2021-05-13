@@ -24,17 +24,6 @@ const float engineCyclders = 4.0; //set number of cyclynders, 1 tacho pulse = 1 
 const uint16_t engineTempR1 = 4000; //set the resistor value used in the voltage divider circuit
 const float engineTempVcc = 3.3; // voltage used in divider circuit.
 
-//set start location, defail is london XD
-//the start locaiton is set for recording laps
-double startLAT = 51.508131, startLON = -0.128002;
-uint16_t lapCounter = 0;
-uint32_t lapDebounce = 30000; // 30s before it can check again when lap is found
-uint32_t lapDebounceMark = 0; //save current millis to mark delay start point
-bool leftStart = false; //check to see car has left start area, to avoid false positive in the pit
-float lapPassDist = 50; //50m from start before new lap can trigger
-float lapTriggerDist = 5; // trigger within 5 meters
-
-
 bool ledState = false;
 
 //set up hardware timers for sampling
@@ -76,22 +65,6 @@ void setup() {
 
 void loop() {
   
-  if(consoleData.available()) //process data if console sends an update
-  {
-    // use this variable to keep track of how many
-    // bytes we've processed from the receive buffer
-    uint16_t recSize = 0;
-    recSize = consoleData.rxObj(devReq, recSize);
-  }
-
-  if ((!devState.marked) and (devReq.markHome)) { //input from console to mark lap start/home position
-    startLAT = gpsData.Lat;
-    startLON = gpsData.Long;
-    devState.marked = true; //marked stops loop from retriggering
-  } else if ((devState.marked) and (!devReq.markHome)) {
-    devState.marked = false; //reset marked only marked home returns to zero, allowing further update if needed.
-  }
-
   consoleUpdate();
   digitalWrite(LED_BUILTIN, ledState);
   ledState = !ledState;
@@ -120,21 +93,6 @@ void sensorUpdate() {
 }
 
 
-void checkLap() { //checks if close to start mark, only resets after 60s and car has left 50m from start.
-  gpsData.laptime = millis() - gpsData.laptimeOffset; 
-  if ((gpsData.distanceToStart <= lapTriggerDist) and (leftStart) and ((millis() - lapDebounceMark) < lapDebounce)) {
-    gpsData.lastLap = gpsData.laptime; //recored previous laptime
-    gpsData.laptimeOffset = millis();
-    leftStart = false;
-    lapDebounceMark = millis();
-    gpsData.laps++;   
-  } else if ((!leftStart) and (gpsData.distanceToStart > lapPassDist)) {
-    leftStart = true;
-  }
-
-}
-
-
 void mpuUpdate() {
   
    if (mpu.update()) { //update date info from mpu, if available)
@@ -155,22 +113,21 @@ void mpuUpdate() {
 
 
 void gpsUpdate() {
-   if (gpsNewData) {
+   if (gpsData.gpsNewData) {
     gps.f_get_position(&gpsData.Lat, &gpsData.Long, &gpsData.fix_age);
     gps.get_datetime(&gpsData.date, &gpsData.time, &gpsData.age);
     gpsData.speed = gps.f_speed_kmph();
     gpsData.alt = gps.f_altitude();
     gpsData.course = gps.f_course();
     gpsData.satellites = gps.satellites();
-    gpsData.distanceToStart = gps.distance_between(gpsData.Lat, gpsData.Long, startLAT, startLON);
-    gpsNewData = false;
+    gpsData.gpsNewData = false;
    }
 
 }
 
 void serialEvent2() { //hardware serial interupt when data arrives
   gps.encode(Serial2.read()); //update gps on serialEvent
-  gpsNewData = true;
+  gpsData.gpsNewData = true;
   
 }
 

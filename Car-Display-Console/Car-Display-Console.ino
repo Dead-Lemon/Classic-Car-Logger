@@ -8,9 +8,25 @@
 #include "menu.h"
 #include "SD.h"
 #include "logging.h"
+#include "TinyGPS.h"
+
+TinyGPS gps; //gps data parsing
 
 uint32_t logFileNum = 0; //number used to create next log file
 auto fileName = logFileNum + ".csv";
+
+//set start location, default is london XD
+//the start locaiton is set for recording laps
+double startLAT = 51.508131, startLON = -0.128002;
+uint16_t lapCounter = 0;
+uint32_t lapDebounce = 30000; // 30s before it can check again when lap is found
+uint32_t lapDebounceMark = 0; //save current millis to mark delay start point
+bool leftStart = false; //check to see car has left start area, to avoid false positive in the pit
+float lapPassDist = 50; //50m from start before new lap can trigger
+float lapTriggerDist = 5; // trigger within 5 meters
+float distanceToStart;
+uint16_t laps;
+uint32_t  laptime, laptimeOffset, lastLap = 0;
 
 SerialTransfer consoleData;
 
@@ -83,6 +99,15 @@ void setup() {
 void loop() {
 
   currentMillis = millis();
+  distanceToStart = gps.distance_between(gpsData.Lat, gpsData.Long, startLAT, startLON);
+
+  if ((!devState.marked) and (devReq.markHome)) { //input from console to mark lap start/home position
+    startLAT = gpsData.Lat;
+    startLON = gpsData.Long;
+    devState.marked = true; //marked stops loop from retriggering
+  } else if ((devState.marked) and (!devReq.markHome)) {
+    devState.marked = false; //reset marked only marked home returns to zero, allowing further update if needed.
+  }
 
   if(consoleData.available()) {
     uint16_t recSize=0; //create var to track incoming bytes
@@ -138,9 +163,16 @@ int bigInt(float raw) {
   return(big, little);
 }
 
-void sendData() {
+void checkLap() { //checks if close to start mark, only resets after 60s and car has left 50m from start.
+  laptime = millis() - gpsData.laptimeOffset; 
+  if ((distanceToStart <= lapTriggerDist) and (leftStart) and ((millis() - lapDebounceMark) < lapDebounce)) {
+    gpsData.lastLap = gpsData.laptime; //recored previous laptime
+    gpsData.laptimeOffset = millis();
+    leftStart = false;
+    lapDebounceMark = millis();
+    laps++;   
+  } else if ((!leftStart) and (distanceToStart > lapPassDist)) {
+    leftStart = true;
+  }
 
-  uint16_t sendSize = 0; //create variable to keep track of number of bytes being sent
-  sendSize = consoleData.txObj(devReq, sendSize); //pack 1st struct into the buffer 
-  consoleData.sendData(sendSize); //send buffer
 }
