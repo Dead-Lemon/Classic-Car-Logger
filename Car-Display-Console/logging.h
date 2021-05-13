@@ -1,3 +1,17 @@
+
+//set start location, default is london XD
+//the start locaiton is set for recording laps
+double startLAT = 51.508131, startLON = -0.128002;
+uint16_t lapCounter = 0;
+uint32_t lapDebounce = 30000; // 30s before it can check again when lap is found
+uint32_t lapDebounceMark = 0; //save current millis to mark delay start point
+bool leftStart = false; //check to see car has left start area, to avoid false positive in the pit
+float lapPassDist = 50; //50m from start before new lap can trigger
+float lapTriggerDist = 5; // trigger within 5 meters
+float distanceToStart;
+uint16_t laps;
+uint32_t  laptime, laptimeOffset, lastLap = 0;
+
 void writeLogs() {
  String csvHead = "Time,UTC Time,Lap,Sector,Predicted Lap Time,Predicted vs Best Lap,GPS_Update,GPS_Delay,Latitude,Longitude,Altitude (m),speed (KPH),Heading,Accuracy (m),Accel X,Accel Y,Accel Z,Brake (calculated),Engine Speed (RPM),Throttle Position (%),Brake (%)";
  Serial1.println("writing logs");
@@ -9,11 +23,11 @@ void writeLogs() {
   logFile.print(" ");
   logFile.print(gpsData.time);  //time
   logFile.print(",");
-  logFile.print(gpsData.laps);  //lap count
+  logFile.print(laps);  //lap count
   logFile.print(",");
-  logFile.print(gpsData.laptime); //predicted lap time
+  logFile.print(laptime); //predicted lap time
   logFile.print(",");
-  logFile.print(gpsData.laptime - gpsData.lastLap); //prediceted vs best (need to look act saving best time)
+  logFile.print(laptime - lastLap); //prediceted vs best (need to look act saving best time)
   logFile.print(",");
   logFile.print(gpsData.gpsNewData);  //GPS_Update, show if GPS returned new info, as it only updates 1/sec
   logFile.print(",");
