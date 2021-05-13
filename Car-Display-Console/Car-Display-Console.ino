@@ -5,6 +5,12 @@
 #include "SensorProfile.h"
 #include "comsDataStruct.h"
 #include "IOmapping.h"
+#include "menu.h"
+#include "SD.h"
+#include "logging.h"
+
+uint32_t logFileNum = 0; //number used to create next log file
+auto fileName = logFileNum + ".csv";
 
 SerialTransfer consoleData;
 
@@ -40,6 +46,10 @@ void setup() {
 
   Serial.begin(115200);
   consoleData.begin(Serial);
+
+  //Serial1.println("Checking For SD Card SD");
+  // see if the card is present and can be initialized:
+  checkSD();
  
   lcd1.begin(16,2); // setup LCD rows and columns
   lcd2.begin(16,2); 
@@ -79,7 +89,13 @@ void loop() {
     recSize = consoleData.rxObj(gyroData, recSize); //pack 1st struct into the buffer
     recSize = consoleData.rxObj(gpsData, recSize); //pack 2nd struct into the buffer
     recSize = consoleData.rxObj(devState, recSize); 
-    recSize = consoleData.rxObj(engineSensor, recSize); 
+    recSize = consoleData.rxObj(engineSensor, recSize);
+    //when new data arrives, write to the SD card
+    if (devState.SDcardOk) {
+      writeLogs();
+    } else {
+      checkSD(); 
+    }     
   }
 
   if ((currentMillis - prevMillis) > lcdUpdateRate) {
@@ -100,7 +116,6 @@ void loop() {
     printLittle(numDisp4.little, &lcd4);
     prevMillis = currentMillis;
   }
-
   
 
 

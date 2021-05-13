@@ -16,6 +16,7 @@ struct gpsDataStruct {
     float speed, alt, course, distanceToStart;
     uint16_t laps;
     uint32_t  laptime, laptimeOffset, lastLap = 0;
+    bool gpsNewData = false;
     
 } gpsData; //all data that will be logged
 

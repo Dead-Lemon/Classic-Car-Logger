@@ -13,15 +13,12 @@
 #include "IOmapping.h"
 
 #include "SPI.h"
-#include "SD.h"
-const uint8_t chipSelect = PA4;
-uint32_t logFileNum = 0; //number used to create next log file
+
 
 //setting up RPM pulse counting
 uint32_t tachoCount = 0;
 const uint32_t SampleRate = 250; //get latest values from all sensors
 const float engineCyclders = 4.0; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
-bool gpsNewData = false;
 
 //set engine temp sensor pin
 const uint16_t engineTempR1 = 4000; //set the resistor value used in the voltage divider circuit
@@ -46,7 +43,6 @@ STM32Timer HWTimer1(TIM1); //enable hardware timer for updating everything
 MPU9250 mpu; //gyro module
 TinyGPS gps; //gps data parsing
 SerialTransfer consoleData; //allow tranfer of data structures over serial
-auto fileName = logFileNum + ".csv";
 
 //HardwareSerial Serial1(PA10, PA9); //enable serial port 1
 HardwareSerial Serial2(PA3, PA2); //enable serial port 2
@@ -60,10 +56,6 @@ void setup() {
   Serial3.begin(115200); //start display console serial interface
   consoleData.begin(Serial1); //start data exchange with display console
   Wire.begin(); //interface with MPU9250
-  
-  //Serial1.println("Checking For SD Card SD");
-  // see if the card is present and can be initialized:
-  checkSD();
 
   Serial1.println("Initializing MPU");
   delay(200);
@@ -112,13 +104,6 @@ void updateAll() {
   sensorUpdate();
   mpuUpdate();
   gpsUpdate();
-
-  
-  if (devState.SDcardOk) {
-    writeLogs();
-  } else {
-   checkSD(); 
-  }
 
 }
 
@@ -203,65 +188,4 @@ void consoleUpdate() {
 
 void tachoUpdate() {
   tachoCount++;
-}
-
-void checkSD() {
-  if (!SD.begin(chipSelect)) {
-    Serial1.println("Insert SD card or logging cannot occur");
-    devState.SDcardOk = false;
-  } else {
-    Serial1.println("SD card detected!");
-    devState.SDcardOk = true;
-  }
-}
-
-void writeLogs() {
- String csvHead = "Time,UTC Time,Lap,Sector,Predicted Lap Time,Predicted vs Best Lap,GPS_Update,GPS_Delay,Latitude,Longitude,Altitude (m),speed (KPH),Heading,Accuracy (m),Accel X,Accel Y,Accel Z,Brake (calculated),Engine Speed (RPM),Throttle Position (%),Brake (%)";
- Serial1.println("writing logs");
- File logFile = SD.open("datalog.txt", FILE_WRITE);  //print csv header
- if (logFile) {
-  logFile.print(millis());  //cpu time
-  logFile.print(",");
-  logFile.print(gpsData.date); //date
-  logFile.print(" ");
-  logFile.print(gpsData.time);  //time
-  logFile.print(",");
-  logFile.print(gpsData.laps);  //lap count
-  logFile.print(",");
-  logFile.print(gpsData.laptime); //predicted lap time
-  logFile.print(",");
-  logFile.print(gpsData.laptime - gpsData.lastLap); //prediceted vs best (need to look act saving best time)
-  logFile.print(",");
-  logFile.print(gpsNewData);  //GPS_Update, show if GPS returned new info, as it only updates 1/sec
-  logFile.print(",");
-  logFile.print(gpsData.age);  //GPS_Delay
-  logFile.print(",");
-  logFile.print(gpsData.Lat);  //Latitude
-  logFile.print(",");
-  logFile.print(gpsData.Long);  //Longitude
-  logFile.print(",");
-  logFile.print(gpsData.alt);  //Altitude
-  logFile.print(",");
-  logFile.print(gpsData.speed);  //speed
-  logFile.print(",");
-  logFile.print(gpsData.course);  //Heading
-  logFile.print(",");
-  logFile.print(gyroData.AccX);  //Accel X
-  logFile.print(",");
-  logFile.print(gyroData.AccY);  //Accel Y
-  logFile.print(",");
-  logFile.print(gyroData.AccZ);  //Accel Z
-  logFile.print(",");
-  logFile.print(0);  //Brake
-  logFile.print(",");
-  logFile.print(0);  //throttle
-  logFile.print(",");
-  logFile.print(gyroData.Roll);  //roll
-  logFile.print(",");
-  logFile.print(gyroData.Pitch);  //pitch
-  logFile.print(",");
-  logFile.println(gyroData.Yaw);  //yaw
-  logFile.close();
- }
-  
 }
