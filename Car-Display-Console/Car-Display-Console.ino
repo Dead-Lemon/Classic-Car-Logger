@@ -16,6 +16,7 @@ uint32_t logFileNum = 0; //number used to create next log file
 auto fileName = logFileNum + ".csv";
 
 SerialTransfer consoleData;
+bool newDataRecieved = false; //bit to define if new data was recieved from the engine interface
 
 struct lcdSettings {
 
@@ -86,8 +87,17 @@ void setup() {
 void loop() {
 
   currentMillis = millis();
-  distanceToStart = gps.distance_between(gpsData.Lat, gpsData.Long, startLAT, startLON);
 
+  if(consoleData.available()) {
+    uint16_t recSize=0; //create var to track incoming bytes
+    recSize = consoleData.rxObj(gyroData, recSize); //pack 1st struct into the buffer
+    recSize = consoleData.rxObj(gpsData, recSize); //pack 2nd struct into the buffer
+    recSize = consoleData.rxObj(devState, recSize); 
+    recSize = consoleData.rxObj(engineSensor, recSize);
+    newDataRecieved = true;
+  }
+
+  
   if ((!devState.marked) and (devReq.markHome)) { //input from console to mark lap start/home position
     startLAT = gpsData.Lat;
     startLON = gpsData.Long;
@@ -96,19 +106,21 @@ void loop() {
     devState.marked = false; //reset marked only marked home returns to zero, allowing further update if needed.
   }
 
-  if(consoleData.available()) {
-    uint16_t recSize=0; //create var to track incoming bytes
-    recSize = consoleData.rxObj(gyroData, recSize); //pack 1st struct into the buffer
-    recSize = consoleData.rxObj(gpsData, recSize); //pack 2nd struct into the buffer
-    recSize = consoleData.rxObj(devState, recSize); 
-    recSize = consoleData.rxObj(engineSensor, recSize);
-    //when new data arrives, write to the SD card
+
+  if (newDataRecieved) {
+  
+    distanceToStart = gps.distance_between(gpsData.Lat, gpsData.Long, startLAT, startLON);    
+    
+    //when new data arrives, write to the SD card 
     if (devState.SDcardOk) {
       writeLogs();
     } else {
       checkSD(); 
-    }     
+    }
+
+    newDataRecieved = false; //marked false as new data has been processed
   }
+  
 
   if ((currentMillis - prevMillis) > lcdUpdateRate) {
     numDisp1.big, numDisp1.little = bigInt(gyroData.Yaw); //convert float to int and split the real and decimal values

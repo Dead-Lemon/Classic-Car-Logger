@@ -43,7 +43,7 @@ void setup() {
   Serial1.println("Starting");
   Serial2.begin(9200); //start listening to GPS serial updates
   Serial3.begin(115200); //start display console serial interface
-  consoleData.begin(Serial1); //start data exchange with display console
+  consoleData.begin(Serial3); //start data exchange with display console
   Wire.begin(); //interface with MPU9250
 
   Serial1.println("Initializing MPU");
@@ -55,16 +55,16 @@ void setup() {
   //delay(200);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, ledState);
-  
+
   pinMode(tachoPin, INPUT);
   attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING); //enable interupt handling for tacho counting, calls tachoUpdate when falling trigger is detected
 
   HWTimer1.attachInterruptInterval(SampleRate * 1000, updateAll); //hardware timer to update coms and logs
-  
+
 }
 
 void loop() {
-  
+
   consoleUpdate();
   digitalWrite(LED_BUILTIN, ledState);
   ledState = !ledState;
@@ -72,7 +72,7 @@ void loop() {
 
 
 void updateAll() {
-  
+
   rpmUpdate();
   sensorUpdate();
   mpuUpdate();
@@ -82,9 +82,9 @@ void updateAll() {
 
 void rpmUpdate() {
 
-  engineSensor.rpm = ((float)tachoCount/ engineCyclders / (1/(float)SampleRate) * 60.0f); 
+  engineSensor.rpm = ((float)tachoCount/ engineCyclders / (1/(float)SampleRate) * 60.0f);
   tachoCount = 0;
-  
+
 }
 
 void sensorUpdate() {
@@ -94,19 +94,19 @@ void sensorUpdate() {
 
 
 void mpuUpdate() {
-  
+
    if (mpu.update()) { //update date info from mpu, if available)
      gyroData.Yaw = mpu.getYaw();
      gyroData.Pitch = mpu.getPitch();
      gyroData.Roll = mpu.getRoll();
      gyroData.AccX = mpu.getAccX();
-     gyroData.AccY = mpu.getAccY(); 
+     gyroData.AccY = mpu.getAccY();
      gyroData.AccZ = mpu.getAccZ();
      gyroData.GyroX = mpu.getGyroX();
-     gyroData.GyroY = mpu.getGyroY(); 
+     gyroData.GyroY = mpu.getGyroY();
      gyroData.GyroZ = mpu.getGyroZ();
 //     gyroData.LinX = mpu.getLinearAccX();
-//     gyroData.LinY = mpu.getLinearAccY(); 
+//     gyroData.LinY = mpu.getLinearAccY();
 //     gyroData.LinZ = mpu.getLinearAccZ(); not logging linear acc.
  }
 }
@@ -128,7 +128,7 @@ void gpsUpdate() {
 void serialEvent2() { //hardware serial interupt when data arrives
   gps.encode(Serial2.read()); //update gps on serialEvent
   gpsData.gpsNewData = true;
-  
+
 }
 
 void consoleUpdate() {
@@ -136,8 +136,8 @@ void consoleUpdate() {
   uint16_t sendSize = 0; //create variable to keep track of number of bytes being sent
   sendSize = consoleData.txObj(gyroData, sendSize); //pack 1st struct into the buffer
   sendSize = consoleData.txObj(gpsData, sendSize); //pack 2nd struct into the buffer
-  sendSize = consoleData.txObj(devState, sendSize); 
-  sendSize = consoleData.txObj(engineSensor, sendSize); 
+  sendSize = consoleData.txObj(devState, sendSize);
+  sendSize = consoleData.txObj(engineSensor, sendSize);
   consoleData.sendData(sendSize); //send buffer
 
 }
