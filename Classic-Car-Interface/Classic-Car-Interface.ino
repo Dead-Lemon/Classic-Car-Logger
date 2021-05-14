@@ -65,9 +65,7 @@ void setup() {
 
 void loop() {
 
-  consoleUpdate();
-  digitalWrite(LED_BUILTIN, ledState);
-  ledState = !ledState;
+//nothing to do here for now
 }
 
 
@@ -77,6 +75,10 @@ void updateAll() {
   sensorUpdate();
   mpuUpdate();
   gpsUpdate();
+  consoleUpdate();
+  gpsData.gpsNewData = false;  //set flag to false post update of the console, so the logs can reflect a gps update
+  digitalWrite(LED_BUILTIN, ledState); //status to show something is happening, lol
+  ledState = !ledState;
 
 }
 
@@ -120,7 +122,6 @@ void gpsUpdate() {
     gpsData.alt = gps.f_altitude();
     gpsData.course = gps.f_course();
     gpsData.satellites = gps.satellites();
-    gpsData.gpsNewData = false;
    }
 
 }
