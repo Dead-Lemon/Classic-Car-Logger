@@ -9,8 +9,10 @@
 #include "SD.h"
 #include "logging.h"
 #include "TinyGPS.h"
+#include "btnDebounce.h"
 
 TinyGPS gps; //gps data parsing
+Button btn1(5);
 
 uint32_t logFileNum = 0; //number used to create next log file
 auto fileName = logFileNum + ".csv";
