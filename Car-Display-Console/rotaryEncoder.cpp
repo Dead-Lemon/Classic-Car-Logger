@@ -1,9 +1,8 @@
 #include "rotaryEncoder.h"
 
-Encoder::Encoder(uint8_t clk,uint8_t  dt,uint8_t  btn) {
+Encoder::Encoder(uint8_t clk,uint8_t  dt) {
   this-> clk = clk; //this-> differentiates between the pin created in the class and locally, I assume this is a lazy/easy way of not creating a new var with a different name? 
   this-> dt = dt;
-  this-> btn = btn;
   clkLastState = false;
   dtLastState = false;
   init();
@@ -11,23 +10,24 @@ Encoder::Encoder(uint8_t clk,uint8_t  dt,uint8_t  btn) {
 
 void Encoder::init() {
   pinMode(clk, INPUT);
-
   pinMode(dt, INPUT);
-  pinMode(btn, INPUT_PULLUP);
-  update();
 }
 
-
 void Encoder::update() {
+  
   clkState = digitalRead(clk);
   dtState = digitalRead(dt);
-  if ((clkState and dtState) or (!clkState and !dtState)) {
-    direction = -1;
-  } else {
-    direction = 1;
-  }
-  counter += direction; 
+
+  if (clkState != clkLastState) {
+    if ((clkState and dtState) or (!clkState and !dtState)) {
+      direction = -1;
+    } else {
+      direction = 1;
+    }
   
+    counter += direction; 
+    clkLastState = clkState;
+  }
 }
 
 void Encoder::zero() {//zero the counter
@@ -46,8 +46,4 @@ int8_t Encoder::getDir() {
 
 int32_t Encoder::getCount(){
   return counter;
-}
-
-bool Encoder::btnState() {
-  return btn;
 }

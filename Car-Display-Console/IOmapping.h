@@ -6,3 +6,7 @@ const uint8_t lcd4_sel = 12;
 
 //SD card SPI CLK = PA5 MISO PA6 MOSI PA7
 const uint8_t chipSelect = PA4;
+
+const uint8_t encoderCLK = 1;
+const uint8_t encoderDT = 2;
+const uint8_t encoderBTN = 3;
