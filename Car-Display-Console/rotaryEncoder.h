@@ -9,13 +9,13 @@ class Encoder {
     bool clkState, clklastState;
     uint32_t prevTime = 0;
     uint32_t debounceDelay = 50; 
+    
 
   public:
-    Button(uint8_t setPin);
-
+    Encoder(uint8_t clk, dt, btn)
     void init();
     void update();
-
+    uint8_t direction();
     bool getState();
     bool isPressed();
     
