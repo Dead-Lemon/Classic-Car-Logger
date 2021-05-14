@@ -11,7 +11,7 @@ class Button {
     uint32_t debounceDelay = 50; 
 
   public:
-    Button(uint8_t setPin);
+    Button(uint8_t pin);
 
     void init();
     void update();
