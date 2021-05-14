@@ -6,18 +6,19 @@
 class Encoder {
   private:
     uint8_t clk, dt, btn;
-    bool clkState, clklastState;
-    uint32_t prevTime = 0;
-    uint32_t debounceDelay = 50; 
-    
+    bool clkState, dtState, clkLastState, dtLastState;
+    int8_t direction = 0;
+    int32_t counter = 0;    
 
   public:
-    Encoder(uint8_t clk, dt, btn)
+    Encoder(uint8_t clk, uint8_t dt, uint8_t btn);
     void init();
     void update();
-    uint8_t direction();
-    bool getState();
-    bool isPressed();
+    void zero();
+    int32_t getCount();
+    void setCount(int32_t value);
+    int8_t getDir();
+    bool btnState();
     
 };
 

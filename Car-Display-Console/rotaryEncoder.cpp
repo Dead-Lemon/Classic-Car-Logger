@@ -1,18 +1,17 @@
 #include "rotaryEncoder.h"
-#include "btnDebouce.h"
 
-Encoder::Encoder(uint8_t clk, dt, btn) {
+Encoder::Encoder(uint8_t clk,uint8_t  dt,uint8_t  btn) {
   this-> clk = clk; //this-> differentiates between the pin created in the class and locally, I assume this is a lazy/easy way of not creating a new var with a different name? 
   this-> dt = dt;
   this-> btn = btn;
-  lastState = LOW;
+  clkLastState = false;
+  dtLastState = false;
   init();
 }
 
 void Encoder::init() {
   pinMode(clk, INPUT);
-  attachInterrupt(digitalPinToInterrupt(clk), update, CHANGE);
-  
+
   pinMode(dt, INPUT);
   pinMode(btn, INPUT_PULLUP);
   update();
@@ -21,23 +20,34 @@ void Encoder::init() {
 
 void Encoder::update() {
   clkState = digitalRead(clk);
-
-  if (newState != lastState) {
-    prevTime = millis();
+  dtState = digitalRead(dt);
+  if ((clkState and dtState) or (!clkState and !dtState)) {
+    direction = -1;
+  } else {
+    direction = 1;
   }
-
-  if (millis() - prevTime > debounceDelay) {
-    state = newState;
-  }
-
-  lastState = newState;
+  counter += direction; 
+  
 }
 
-bool Button::getState() {
-  update();
-  return state;
+void Encoder::zero() {//zero the counter
+  counter = 0;
 }
 
-bool Button::isPressed() {
-  return (getState() == HIGH); //can be used to invert button state by setting to LOW
+void Encoder::setCount(int32_t value) {
+  counter = value;
+}
+
+int8_t Encoder::getDir() {
+  int8_t dir = direction;
+  direction = 0;
+  return dir;
+}
+
+int32_t Encoder::getCount(){
+  return counter;
+}
+
+bool Encoder::btnState() {
+  return btn;
 }
