@@ -1,7 +1,7 @@
 //classic car interface and logger for racing stats.
 //Collected data is stored to SD and live stats sent to display module
 //base on STM32F01C8 (blue pull) due to larger rom and multiple hardware serial IO
-
+//uses board library: https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json
 
 #include "MPU9250.h" //gyro interface
 #include "TinyGPS.h" //gps interface
@@ -48,7 +48,7 @@ void setup() {
 
   Serial1.println("Initializing MPU");
   delay(200);
-  mpu.setup(0x68); //connect to mpu
+  //mpu.setup(0x68); //connect to mpu
   delay(200);
   //mpu.calibrateAccelGyro(); //calibrate Disabled as result is strange output post operation (may be due to other IO not being used on MPU breakout board?), easier to just zero current values
   //mpu.calibrateMag();
@@ -70,10 +70,15 @@ void loop() {
 
 
 void updateAll() {
-
+  
+  Serial1.println("Updating"); 
   rpmUpdate();
+  Serial1.println("rpm");
+  Serial1.println(engineSensor.rpm);
   sensorUpdate();
-  mpuUpdate();
+  Serial1.println("temp");
+  Serial1.println(engineSensor.engineTemp);
+  //mpuUpdate();
   gpsUpdate();
   consoleUpdate();
   gpsData.gpsNewData = false;  //set flag to false post update of the console, so the logs can reflect a gps update

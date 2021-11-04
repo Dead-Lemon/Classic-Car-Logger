@@ -10,9 +10,13 @@
 #include "logging.h"
 #include "TinyGPS.h"
 #include "btnDebounce.h"
+#include "rotaryEncoder.h"
 
 TinyGPS gps; //gps data parsing
-Button btn1(5);
+Button menuBTN(encoderBTN);
+Encoder menuENC(encoderCLK, encoderDT);
+
+bool inMenu = false;
 
 uint32_t logFileNum = 0; //number used to create next log file
 auto fileName = logFileNum + ".csv";
@@ -88,8 +92,6 @@ void setup() {
 
 void loop() {
 
-  currentMillis = millis();
-
   if(consoleData.available()) {
     uint16_t recSize=0; //create var to track incoming bytes
     recSize = consoleData.rxObj(gyroData, recSize); //pack 1st struct into the buffer
@@ -123,8 +125,9 @@ void loop() {
     newDataRecieved = false; //marked false as new data has been processed
   }
   
-
-  if ((currentMillis - prevMillis) > lcdUpdateRate) {
+  currentMillis = millis();
+  
+  if (((currentMillis - prevMillis) > lcdUpdateRate) and !inMenu) {
     numDisp1.big, numDisp1.little = bigInt(gyroData.Yaw); //convert float to int and split the real and decimal values
     bigNum1.displayLargeInt(numDisp1.big, 0, 3, false); //draw big number
     printLittle(numDisp1.little, &lcd1); //draw decimal value in small text
