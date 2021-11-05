@@ -17,12 +17,13 @@
 
 //setting up RPM pulse counting
 uint32_t tachoCount = 0;
-const uint32_t SampleRate = 250; //get latest values from all sensors
-const float engineCyclders = 4.0; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
+const uint32_t SampleRate = 200; //set interval (ms) sensor update and trasmit rate
+const float engineCyclders = 4.0f; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
 
 //set engine temp sensor pin
-const uint16_t engineTempR1 = 4000; //set the resistor value used in the voltage divider circuit
+const uint16_t engineTempR1 = 1000; //set the resistor value used in the voltage divider circuit
 const float engineTempVcc = 3.3; // voltage used in divider circuit.
+const float engineTempOffset = 50.0f; //offset to test with
 
 bool ledState = false;
 
@@ -88,14 +89,13 @@ void updateAll() {
 }
 
 void rpmUpdate() {
-
-  engineSensor.rpm = ((float)tachoCount/ engineCyclders / (1/(float)SampleRate) * 60.0f);
+  engineSensor.rpm = ((((float)tachoCount/ engineCyclders) / SampleRate) * 60000.0f); //rotations over time(ms)
   tachoCount = 0;
 
 }
 
 void sensorUpdate() {
-  engineSensor.engineTemp = readEngineTemp(analogRead(engineTempInput), engineTempR1, engineTempVcc);
+  engineSensor.engineTemp = (readEngineTemp(analogRead(engineTempInput), engineTempR1, engineTempVcc)-engineTempOffset);
   engineSensor.oilPress = readOilPress(analogRead(oilPressInput));
 }
 
@@ -151,4 +151,5 @@ void consoleUpdate() {
 
 void tachoUpdate() {
   tachoCount++;
+ // Serial1.println(tachoCount);
 }
