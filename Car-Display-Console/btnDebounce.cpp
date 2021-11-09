@@ -1,7 +1,7 @@
 #include "btnDebounce.h"
 
 Button::Button(uint8_t pin) {
-  this-> pin = pin; //this-> differentiates between the pin created in the class and locally, I assume this is a lazy/easy way of not creating a new var with a different name? 
+  this-> pin = pin; //this-> differentiates between the pin created in the class and locally, Does this move make it available for the fucntions in the class?
   lastState = LOW;
   init();
 }

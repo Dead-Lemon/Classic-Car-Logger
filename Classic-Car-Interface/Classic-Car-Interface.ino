@@ -142,7 +142,6 @@ void consoleUpdate() {
   uint16_t sendSize = 0; //create variable to keep track of number of bytes being sent
   sendSize = consoleData.txObj(gyroData, sendSize); //pack 1st struct into the buffer
   sendSize = consoleData.txObj(gpsData, sendSize); //pack 2nd struct into the buffer
-  sendSize = consoleData.txObj(devState, sendSize);
   sendSize = consoleData.txObj(engineSensor, sendSize);
   consoleData.sendData(sendSize); //send buffer
 
