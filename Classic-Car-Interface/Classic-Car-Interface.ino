@@ -16,9 +16,13 @@
 
 
 //setting up RPM pulse counting
-uint32_t tachoCount = 0;
-const uint32_t SampleRate = 200; //set interval (ms) sensor update and trasmit rate
-const float engineCyclders = 4.0f; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
+volatile uint32_t tachoCount = 0;
+volatile uint64_t tachoLastUS = 0;
+const uint32_t SampleRate = 250; //set interval (ms) sensor update and trasmit rate
+const uint8_t engineCylinders = 4; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
+const uint32_t maxRPM = 8000; //expected max RPM of engine
+const uint32_t tachoDebouceUS = 60000000L/maxRPM/engineCylinders;
+
 
 //set engine temp sensor pin
 const uint16_t engineTempR1 = 1000; //set the resistor value used in the voltage divider circuit
@@ -89,7 +93,7 @@ void updateAll() {
 }
 
 void rpmUpdate() {
-  engineSensor.rpm = ((((float)tachoCount/ engineCyclders) / SampleRate) * 60000.0f); //rotations over time(ms)
+  engineSensor.rpm = ((((float)tachoCount/ engineCylinders) / SampleRate) * 60000.0f); //rotations over time(ms)
   tachoCount = 0;
 
 }
@@ -149,6 +153,9 @@ void consoleUpdate() {
 
 
 void tachoUpdate() {
+  if (micros() > tachoLastUS) { //debounce tacho input
   tachoCount++;
+  tachoLastUS = micros();
+  };
  // Serial1.println(tachoCount);
 }
