@@ -20,6 +20,7 @@ struct gpsDataStruct {
 
 struct sensorData {
 
-  float batVolt, engineTemp, oilPress, rpm, brake, throttle;
+  float batVolt, engineTemp, oilPress, brake, throttle;
+  uint32_t rpm;
   
 } engineSensor;

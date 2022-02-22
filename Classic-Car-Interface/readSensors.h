@@ -33,3 +33,10 @@ float readOilPress(uint16_t raw)
   oilpress = (kpaval * 0.145038); //Convert to psi - sensor is already relative to atmospheric
   return (oilpress);
 }
+
+float readBatteryVolt(uint16_t raw)
+{
+  uint16_t scaled;
+  scaled = map(raw,0,1023,0,1860);
+  return(float(scaled)/100.0f);
+}

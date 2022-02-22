@@ -17,11 +17,15 @@
 
 //setting up RPM pulse counting
 volatile uint32_t tachoCount = 0;
-volatile uint64_t tachoLastUS = 0;
+volatile uint64_t tachoLastUS = 0; 
+volatile uint64_t rpmLastUS = 0;
+volatile uint64_t rpmTimeDiff = 0;
 const uint32_t SampleRate = 250; //set interval (ms) sensor update and trasmit rate
+const uint32_t tachoSampleSize = 16; //number of tacho pulses required before rpm is calculated 
 const uint8_t engineCylinders = 4; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
 const uint32_t maxRPM = 8000; //expected max RPM of engine
-const uint32_t tachoDebouceUS = 60000000L/maxRPM/engineCylinders;
+const uint32_t limitRPM = 7250; //sets a rev limiter to cut power to engine
+const uint32_t tachoDebounceUS = 60000000L/maxRPM/engineCylinders;
 
 
 //set engine temp sensor pin
@@ -77,23 +81,30 @@ void loop() {
 void updateAll() {
   
   Serial1.println("Updating"); 
-  rpmUpdate();
-  Serial1.println("rpm");
+  Serial1.print("RPM: ");
   Serial1.println(engineSensor.rpm);
   sensorUpdate();
-  Serial1.println("temp");
-  Serial1.println(engineSensor.engineTemp);
-  //mpuUpdate();
-  gpsUpdate();
-  consoleUpdate();
-  gpsData.gpsNewData = false;  //set flag to false post update of the console, so the logs can reflect a gps update
-  digitalWrite(LED_BUILTIN, ledState); //status to show something is happening, lol
-  ledState = !ledState;
+//  Serial1.println("temp");
+//  Serial1.println(engineSensor.engineTemp);
+  Serial1.print("Batter Voltage: ");
+  Serial1.println(engineSensor.batVolt);
+  if (engineSensor.rpm > limitRPM)
+  {
+    Serial1.println("!!!!! OVER REV LIMIT !!!!!");
+  }
+//  mpuUpdate();
+//  gpsUpdate();
+//  consoleUpdate();
+//  gpsData.gpsNewData = false;  //set flag to false post update of the console, so the logs can reflect a gps update
+
 
 }
 
 void rpmUpdate() {
-  engineSensor.rpm = ((((float)tachoCount/ engineCylinders) / SampleRate) * 60000.0f); //rotations over time(ms)
+//  engineSensor.rpm = ((((float)tachoCount/ engineCylinders) / SampleRate) * 60000.0f); //rotations over time(ms)
+  rpmTimeDiff = micros() - rpmLastUS;
+  rpmLastUS = micros();
+  engineSensor.rpm = ((tachoCount*60000000L)/engineCylinders/rpmTimeDiff);
   tachoCount = 0;
 
 }
@@ -101,6 +112,7 @@ void rpmUpdate() {
 void sensorUpdate() {
   engineSensor.engineTemp = (readEngineTemp(analogRead(engineTempInput), engineTempR1, engineTempVcc)-engineTempOffset);
   engineSensor.oilPress = readOilPress(analogRead(oilPressInput));
+  engineSensor.batVolt = readBatteryVolt(analogRead(batteryVoltageInput));
 }
 
 
@@ -153,9 +165,16 @@ void consoleUpdate() {
 
 
 void tachoUpdate() {
-  if (micros() > tachoLastUS) { //debounce tacho input
-  tachoCount++;
-  tachoLastUS = micros();
+  if (tachoDebounceUS < (micros()-tachoLastUS)) { //debounce tacho input
+    tachoCount++;
+    tachoLastUS = micros();
+    
+    if (tachoCount >= 32) //calculate rpm after set count, should give better results at high rpm, over a time base calc
+    {
+      rpmUpdate();
+      ledState = !ledState;
+      digitalWrite(LED_BUILTIN, ledState); //status to show something is happening, lol
+    }
   };
  // Serial1.println(tachoCount);
 }
