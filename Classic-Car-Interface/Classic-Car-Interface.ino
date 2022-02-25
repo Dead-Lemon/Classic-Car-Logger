@@ -21,7 +21,7 @@ volatile uint64_t tachoLastUS = 0;
 volatile uint64_t rpmLastUS = 0;
 volatile uint64_t rpmTimeDiff = 0;
 const uint32_t SampleRate = 250; //set interval (ms) sensor update and trasmit rate
-const uint32_t tachoSampleSize = 16; //number of tacho pulses required before rpm is calculated 
+const uint32_t tachoSampleSize = 32; //number of tacho pulses required before rpm is calculated 
 const uint8_t engineCylinders = 4; //set number of cyclynders, 1 tacho pulse = 1 piston firing, 4 pistons = 4 pulse per rev.
 const uint32_t maxRPM = 8000; //expected max RPM of engine
 const uint32_t limitRPM = 7250; //sets a rev limiter to cut power to engine
@@ -46,8 +46,8 @@ SerialTransfer consoleData; //allow tranfer of data structures over serial
 HardwareSerial Serial2(PA3, PA2); //enable serial port 2
 HardwareSerial Serial3(PB11, PB10); //enable serial port 3
 
-void setup() {
-
+void setup() 
+{
   Serial1.begin(115200); //Start debug interface
   Serial1.println("Starting");
   Serial2.begin(9200); //start listening to GPS serial updates
@@ -66,20 +66,19 @@ void setup() {
   digitalWrite(LED_BUILTIN, ledState);
 
   pinMode(tachoPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, FALLING); //enable interupt handling for tacho counting, calls tachoUpdate when falling trigger is detected
+  attachInterrupt(digitalPinToInterrupt(tachoPin), tachoUpdate, RISING); //enable interupt handling for tacho counting, calls tachoUpdate when falling trigger is detected
 
   HWTimer1.attachInterruptInterval(SampleRate * 1000, updateAll); //hardware timer to update coms and logs
-
 }
 
-void loop() {
-
+void loop() 
+{
 //nothing to do here for now
 }
 
 
-void updateAll() {
-  
+void updateAll() 
+{
   Serial1.println("Updating"); 
   Serial1.print("RPM: ");
   Serial1.println(engineSensor.rpm);
@@ -96,17 +95,14 @@ void updateAll() {
 //  gpsUpdate();
 //  consoleUpdate();
 //  gpsData.gpsNewData = false;  //set flag to false post update of the console, so the logs can reflect a gps update
-
-
 }
 
-void rpmUpdate() {
-//  engineSensor.rpm = ((((float)tachoCount/ engineCylinders) / SampleRate) * 60000.0f); //rotations over time(ms)
+void rpmUpdate() 
+{
   rpmTimeDiff = micros() - rpmLastUS;
   rpmLastUS = micros();
   engineSensor.rpm = ((tachoCount*60000000L)/engineCylinders/rpmTimeDiff);
   tachoCount = 0;
-
 }
 
 void sensorUpdate() {
@@ -116,8 +112,8 @@ void sensorUpdate() {
 }
 
 
-void mpuUpdate() {
-
+void mpuUpdate() 
+{
    if (mpu.update()) { //update date info from mpu, if available)
      gyroData.Yaw = mpu.getYaw();
      gyroData.Pitch = mpu.getPitch();
@@ -135,8 +131,10 @@ void mpuUpdate() {
 }
 
 
-void gpsUpdate() {
-   if (gpsData.gpsNewData) {
+void gpsUpdate() 
+{
+   if (gpsData.gpsNewData) 
+   {
     gps.f_get_position(&gpsData.Lat, &gpsData.Long, &gpsData.fix_age);
     gps.get_datetime(&gpsData.date, &gpsData.time, &gpsData.age);
     gpsData.speed = gps.f_speed_kmph();
@@ -147,14 +145,15 @@ void gpsUpdate() {
 
 }
 
-void serialEvent2() { //hardware serial interupt when data arrives
+void serialEvent2() 
+{ //hardware serial interupt when data arrives
   gps.encode(Serial2.read()); //update gps on serialEvent
   gpsData.gpsNewData = true;
 
 }
 
-void consoleUpdate() {
-
+void consoleUpdate() 
+{
   uint16_t sendSize = 0; //create variable to keep track of number of bytes being sent
   sendSize = consoleData.txObj(gyroData, sendSize); //pack 1st struct into the buffer
   sendSize = consoleData.txObj(gpsData, sendSize); //pack 2nd struct into the buffer
@@ -164,17 +163,18 @@ void consoleUpdate() {
 }
 
 
-void tachoUpdate() {
-  if (tachoDebounceUS < (micros()-tachoLastUS)) { //debounce tacho input
+void tachoUpdate() 
+{
+  if (tachoDebounceUS < (micros()-tachoLastUS)) //debounce tacho input
+  { 
     tachoCount++;
     tachoLastUS = micros();
     
-    if (tachoCount >= 32) //calculate rpm after set count, should give better results at high rpm, over a time base calc
+    if (tachoCount >= tachoSampleSize) //calculate rpm after set count, should give better results at high rpm, over a time base calc
     {
       rpmUpdate();
       ledState = !ledState;
       digitalWrite(LED_BUILTIN, ledState); //status to show something is happening, lol
     }
   };
- // Serial1.println(tachoCount);
 }
